@@ -1,4 +1,5 @@
-var async = require('async');
+// hath
+var util = require('util');
 
 var default_options = {
   pass: (message) => { console.log('PASS: ' + message); },
@@ -7,10 +8,11 @@ var default_options = {
     console.log('----');
     console.log('PASS: ' + npass);
     console.log('FAIL: ' + nfail);
+    console.log(0===nfail ? 'TESTS PASS' : 'TESTS FAIL');
   }
 };
 
-function TestHelper(options) {
+function Hath(options) {
   this.options = options || {};
   this.options.pass = this.options.pass || default_options.pass; 
   this.options.fail = this.options.fail || default_options.fail; 
@@ -29,36 +31,53 @@ function assert(condition, message) {
     this.options.fail(message);
   }
 }
-TestHelper.prototype.assert = assert;
+Hath.prototype.assert = assert;
 
-function assertEquals(actual, expected, message) {
-  message = message || 'should be "' + expected + '" but was "' + actual + '"';
+function assertEqual(actual, expected, message) {
+  message = message || 'should be ' + expected + ' but was ' + actual + '';
   this.assert(actual === expected, message);
 }
-TestHelper.prototype.assertEquals = assertEquals;
+Hath.prototype.assertEqual = assertEqual;
 
 function end() {
   this.options.summary(this.npass, this.nfail);
 }
-TestHelper.prototype.end = end;
+Hath.prototype.end = end;
+
+function sequence(t, steps, done) {
+  var nsteps = steps.length;
+  if (!nsteps) return done();
+
+  var count = 0;
+  var message;
+
+  function complete(err) {
+    ++count;
+    message = message || err;
+    if (nsteps > count) {
+      steps[count](t, complete);
+    } else {
+      done(message);
+    }
+  }
+
+  steps[count](t, complete);
+}
 
 function run(label, steps, next) {
   console.log(label + ':');
-  async.eachSeries(steps, (step, done) => {
-    step(this, done);
-  },
-  (err) => { if (next) { next(); } else { this.end(); }});
+  sequence(this, steps, (err) => { if (next) { next(); } else { this.end(); }});
 }
-TestHelper.prototype.run = run;
+Hath.prototype.run = run;
 
-module.exports = TestHelper;
+module.exports = Hath;
 
 function suite() {
-  var params = Array.prototype.slice.call(arguments);
-  var label = params.shift();
+  var steps = Array.prototype.slice.call(arguments);
+  var label = steps.shift();
   return function(t, done) {
-    if (null == t) t = new TestHelper();
-    t.run(label, params, done);
+    if (null == t) t = new Hath();
+    t.run(label, steps, done);
   };
 }
 

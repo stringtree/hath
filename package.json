@@ -1,12 +1,19 @@
 {
   "name": "hath",
-  "version": "0.1.0",
-  "description": "unit tests with no magic",
+  "version": "1.0.0",
+  "description": "unit tests without magic",
   "main": "index.js",
   "scripts": {
     "test": "node test/test_all.js"
   },
-  "dependencies": {
-    "async": "^2.0.1"
+  "license": "Apache-2.0",
+  "repository": {
+    "type" : "git",
+    "url" : "http://github.com/stringtree/hath.git"
+  },
+  "author" : {
+    "name" : "Frank Carver",
+    "email" : "frank@efsol.com",
+    "url" : "http://frankcarver.me/"
   }
 }
