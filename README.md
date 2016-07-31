@@ -82,7 +82,7 @@ Send the supplied test suite label to the 'label' handler, then run the supplied
 
      var test = Hath.suite(label, steps: array(function(t, done)))
 
-Convenience method for the common case of constructing a test from a list of other tests. Note that this is a 'static' function, called on the 'class' rather than am instantiated test runner. This means that it can be done at any point in your code, typically before deciding whether to create a fresh test runner or to use an existing one.
+Convenience method for the common case of constructing a test from a list of other tests. Note that this is a 'static' function, called on the 'class' rather than an instantiated test runner. This means that it can be done at any point in your code, typically before deciding whether to create a fresh test runner or to use an existing one.
 
 The suite function is defined as:
 
@@ -277,13 +277,13 @@ For speed of development, I like to be able to run any of my test files on their
 This approach means that I can easily work with a single test file until I get it passing,
 then run a different test file, a group of test files, or the whole test suite without any changes to the code.
 
-To make this work, each tets file needs to be both runnable on its own, and callable as part of a larger group of tests. 
-This is certainly possible in Node.js, but it is a little wordy.
+To make this work, each test file needs to be both runnable on its own, **and** callable as part of a larger group of tests. 
+This is certainly possible in Node.js, but it can be a little wordy.
 As you may have noticed in the examples above, each test file ends with assigning a function to 'module.exports'
 and (if the test file has been called on its own) running the exported function using a fresh Hath instance.
 
 By taking this approach, every test file is also a test function, exposing the same function(t, done) API.
-A file which runs a sequence of other test files has the same structure as a file containing tests:
+A file which runs a sequence of other test files has the same structure as a file running individual tests:
 
 ```js
 const Hath = require('hath');
