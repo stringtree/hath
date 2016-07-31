@@ -5,10 +5,10 @@
 **hath** is a unit test framework which is just regular Javascript code.
 * You don't need  a special test runner, just _**node** your-test-file_.
 * There's no "magic" behaviour: no names are special, no folders are scanned.
-* You can call single tests or groups of tests from your own code, or from other tests.
-* If you want to include a test, call it in your code; if you want to exclude a test, delete it or comment it out
+* You can call ay combination of single tests or groups of tests from your own code, or from other tests.
+* Which tests to run are defined in ordinary code using simple JavaScript data structures and 'require'
 * Tests are run in the sequence they are supplied, even if they are asynchronous 
-(as long as they call the supplied 'done' when finished)
+(as long as they call the supplied callback when finished)
 
 **hath** is small (one source file of around 100 lines) and has no dependencies so it won't bloat your project, yet it still includes a test runner, basic asserts, a convenience method for simpler test suite definitions, and easy control of output format and destination.  
 
@@ -17,6 +17,7 @@
 var Hath = require('hath');
 
 function testOddNumbers(t, done) {
+  t.assert(3 > 1);
   t.assert(5 > 3);
   done(); 
 }
@@ -27,15 +28,15 @@ function testEvenNumbers(t, done) {
 }
 
 function testSameNumbers(t, done) {
-  t.assertEqual(4, 3.5);
+  t.assertEqual(4, (2 * 2));
   done(); 
 }
 
-module.exports = Hath.suite('Numbers', 
+module.exports = Hath.suite('Numbers', [
   testOddNumbers,
   testEvenNumbers,
   testSameNumbers
-);
+]);
 
 if (module === require.main) {
   module.exports(new Hath());
@@ -92,10 +93,10 @@ function testNE2(t, done) {
   done();
 } 
 
-module.exports = Hath.suite('tt',
+module.exports = Hath.suite('tt', [
   testNE,
   testNE2
-);
+]);
 
 if (module === require.main) {
   module.exports(new Hath());
@@ -138,11 +139,11 @@ function testDouble(t, done) {
   });
 } 
 
-module.exports = Hath.suite('tt',
+module.exports = Hath.suite('tt', [
   testEmpty,
   testSingle,
   testDouble
-);
+]);
 
 if (module === require.main) {
   module.exports(new Hath());
@@ -158,24 +159,33 @@ Although this approach can seem a bit clumsy compared with magical functions, it
 
 ### Exports and require.main
 
-For speed of development, I like to be able to run any of my test files on their own 
-as well as part of an overall test suite. This approach means that I can easily work with a single test file until I get it passing, then run a different test file, a group of test files, or the whole test suite without any changes to the code.
+For speed of development, I like to be able to run any of my test files on their own as well as part of an overall test suite. 
+This approach means that I can easily work with a single test file until I get it passing,
+then run a different test file, a group of test files, or the whole test suite without any changes to the code.
 
-To make this work, each tets file needs to be both runnable on its own, and callable as part of a larger group of tests. This is certainly possible in Node.js, but it is a little wordy.
-As you may have noticed in the examples above, each test file ends with assigning a function to 'module.exports' and (if the test file has been called on its own) running the exported function using a fresh Hath instance.
+To make this work, each tets file needs to be both runnable on its own, and callable as part of a larger group of tests. 
+This is certainly possible in Node.js, but it is a little wordy.
+As you may have noticed in the examples above, each test file ends with assigning a function to 'module.exports'
+and (if the test file has been called on its own) running the exported function using a fresh Hath instance.
 
-By taking this approach, every test file is also a test function, exposing the same function(t, done) API. A file which runs a sequeche of other test files has an identical structure:
+By taking this approach, every test file is also a test function, exposing the same function(t, done) API.
+A file which runs a sequence of other test files has an identical structure:
 
 ```js
 const Hath = require('hath');
 
-module.exports = Hath.suite('All tests',
+module.exports = Hath.suite('All tests', [
   require('./test_symbols'),
-  require('./test_level1')
-);
+  require('./test_level1'),
+  require('./test_level2')
+]);
 
 if (module === require.main) {
   module.exports(new Hath());
 }
 ```
-This is a principle known as _self similarity_ and it is very powerful.
+This is a principle known as _self similarity_ and it can be very powerful.
+
+### Test Output
+
+Note that the top-level call in the require.main section does ot pass a callback. If no callback is provided, **hath** sends test summary output to its configured 'summary' handler instead. By default, this writes to console.out, but is easily changed by supplying overrides to the _new Hath()_ constructor. 

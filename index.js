@@ -2,6 +2,7 @@
 var util = require('util');
 
 var default_options = {
+  label: (text) => { console.log(text + ':'); },
   pass: (message) => { console.log('PASS: ' + message); },
   fail: (message) => { console.log('FAIL: ' + message); },
   summary: (npass, nfail) => {
@@ -14,6 +15,7 @@ var default_options = {
 
 function Hath(options) {
   this.options = options || {};
+  this.options.label = this.options.label || default_options.label; 
   this.options.pass = this.options.pass || default_options.pass; 
   this.options.fail = this.options.fail || default_options.fail; 
   this.options.summary = this.options.summary || default_options.summary; 
@@ -39,11 +41,6 @@ function assertEqual(actual, expected, message) {
 }
 Hath.prototype.assertEqual = assertEqual;
 
-function end() {
-  this.options.summary(this.npass, this.nfail);
-}
-Hath.prototype.end = end;
-
 function sequence(t, steps, done) {
   var nsteps = steps.length;
   if (!nsteps) return done();
@@ -65,18 +62,21 @@ function sequence(t, steps, done) {
 }
 
 function run(label, steps, next) {
-  console.log(label + ':');
-  sequence(this, steps, (err) => { if (next) { next(); } else { this.end(); }});
+  this.options.label(label);
+  sequence(this, steps, (err) => {
+    if (next) {
+      next(this.npass, this.nfail);
+    } else {
+      this.options.summary(this.npass, this.nfail);
+    }
+  });
 }
 Hath.prototype.run = run;
 
 module.exports = Hath;
 
-function suite() {
-  var steps = Array.prototype.slice.call(arguments);
-  var label = steps.shift();
+function suite(label, steps) {
   return function(t, done) {
-    if (null == t) t = new Hath();
     t.run(label, steps, done);
   };
 }
