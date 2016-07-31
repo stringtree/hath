@@ -2,15 +2,16 @@
 var util = require('util');
 
 var default_options = {
-  label: (text) => { console.log(text + ':'); },
-  pass: (message) => { console.log('PASS: ' + message); },
-  fail: (message) => { console.log('FAIL: ' + message); },
-  summary: (npass, nfail) => {
+  label: function(text) { console.log(text + ':'); },
+  pass: function(message) { console.log('PASS: ' + message); },
+  fail: function(message) { console.log('FAIL: ' + message); },
+  summary: function(npass, nfail) {
     console.log('----');
     console.log('PASS: ' + npass);
     console.log('FAIL: ' + nfail);
     console.log(0===nfail ? 'TESTS PASS' : 'TESTS FAIL');
-  }
+  },
+  message: 'assert'
 };
 
 function Hath(options) {
@@ -19,12 +20,13 @@ function Hath(options) {
   this.options.pass = this.options.pass || default_options.pass; 
   this.options.fail = this.options.fail || default_options.fail; 
   this.options.summary = this.options.summary || default_options.summary; 
+  this.options.message = this.options.message || default_options.message; 
   this.npass = 0;
   this.nfail = 0;
 }
 
 function assert(condition, message) {
-  message = message || 'assertion failure';
+  message = message || this.options.message;
   if (condition) {
     ++this.npass;
     this.options.pass(message);
@@ -34,12 +36,6 @@ function assert(condition, message) {
   }
 }
 Hath.prototype.assert = assert;
-
-function assertEqual(actual, expected, message) {
-  message = message || 'should be ' + expected + ' but was ' + actual + '';
-  this.assert(actual === expected, message);
-}
-Hath.prototype.assertEqual = assertEqual;
 
 function sequence(t, steps, done) {
   var nsteps = steps.length;
@@ -62,12 +58,13 @@ function sequence(t, steps, done) {
 }
 
 function run(label, steps, next) {
-  this.options.label(label);
-  sequence(this, steps, (err) => {
+  var self = this;
+  self.options.label(label);
+  sequence(this, steps, function(err) {
     if (next) {
-      next(this.npass, this.nfail);
+      next(self.npass, self.nfail);
     } else {
-      this.options.summary(this.npass, this.nfail);
+      self.options.summary(self.npass, self.nfail);
     }
   });
 }
