@@ -5,13 +5,15 @@
 **hath** is a unit test framework which is just regular Javascript code.
 * You don't need  a special test runner, just _**node** your-test-file_.
 * There's no "magic" behaviour: no names are special, no folders are scanned.
-* Uses no fancy version-specific features, tested as far back as node 0.11
+* Uses no fancy version-specific features, tested as far back as node 0.10
 * You can call any combination of single tests or groups of tests from your own code, or from other tests.
 * Which tests to run are defined in ordinary code using simple JavaScript data structures and 'require'
 * Tests are run in the sequence they are supplied, even if they are asynchronous 
 _(as long as they call the supplied callback when finished)_
 
-**hath** is small (one source file of around 100 lines) and has no dependencies so it won't bloat your project, yet it still includes a test runner, basic asserts, a convenience method for simpler test suite definitions, and easy control of output format and destination.  
+**hath** is small (one source file of around 100 lines) and has no dependencies so it won't bloat your project,
+yet it still includes a test runner, basic asserts, a convenience method for simpler test suite definitions,
+and easy control of output format and destination.  
 
 ## Usage Example
 ```js
@@ -45,11 +47,16 @@ if (module === require.main) {
 ```
 ## Design Philosophy
 
-I have been practicing Test-Driven Development (TDD) since the term was invented. I was part of the team who helped Kent Beck write [his seminal book on the subject](https://www.amazon.co.uk/Test-Driven-Development-Addison-Wesley-Signature/dp/0321146530/) back in 2002, and I rely on unit tests every working day, in many different programming languages. Right now, I'm using node.js.
+I have been practicing Test-Driven Development (TDD) since the term was invented.
+I was part of the team who helped Kent Beck write [his seminal book on the subject](https://www.amazon.co.uk/Test-Driven-Development-Addison-Wesley-Signature/dp/0321146530/) back in 2002,
+and I rely on unit tests every working day, in many different programming languages. Right now, I'm using node.js.
 
 I value the simplest possible tools which each do one job and do it well.
 
-Programming is fun because software can do _anything_, so it feels especially limiting to have to fight against the very software tools which are supposed to be helping create code. I am fed up with node test frameworks which force me to write my tests their way, pull in reams of dependencies, and still don't allow me to do simple things such as running different sets of tests for different uses.
+Programming is fun because software can do _anything_, so it feels especially limiting to have to fight against
+the very software tools which are supposed to be helping create code.
+I am fed up with node test frameworks which force me to write my tests their way, pull in reams of dependencies,
+and still don't allow me to do simple things such as running different sets of tests for different uses.
 
 I want to bring unit testing back into programming, in a way that makes it easy to use all the programming skills at our disposal.
 
@@ -71,6 +78,12 @@ Create a new **hath** test runner, using the specified output functions, or defa
 Evaluate the supplied expression.
 * If it is truthy, call the 'pass' handler with the supplied message (or a default if not supplied)
 * If it is falsy, call the 'fail' handler with the supplied message (or a default if not supplied)
+
+### label
+
+    t.label(text)
+
+Use the supplied text instead of the test function name as a label in test output.
 
 ### run
 
@@ -147,7 +160,8 @@ if (module === require.main) {
 }
 ```
 
-If you want to go a bit further, and need similar asserts in several places in your project, you can easily create your own derivative of hath which has whatever extras you like:
+If you want to go a bit further, and need similar asserts in several places in your project,
+you can easily create your own derivative of hath which has whatever extras you like:
 
 Create a file, say _hathmore.js_
 ```js
@@ -243,8 +257,8 @@ however you like. By default **hath** writes test output using console.log, but 
 
 The Hath() constructor takes a single JavaScript object as a parameter, and looks for the following fields:
 * **label** - function taking a single parameter. Called with a test suite description just before it starts  
-* **pass** - function taking a single parameter. Called with the supplied (or defaulted) message for every assert which succeeds
-* **fail** - function taking a single parameter. Called with the supplied (or defaulted) message for every assert which fails
+* **pass** - function taking a single parameter. Called with the function name and the supplied (or defaulted) message for every assert which succeeds
+* **fail** - function taking a single parameter. Called with the function name and the supplied (or defaulted) message for every assert which fails
 * **summary** - function taking two parameters. Called with number of passes and number of fails after the final test completes
 * **message** - default message for _assert_ if none is supplied
 
@@ -253,8 +267,8 @@ As an example, the default options in the source code are:
 ```js
 var default_options = {
   label: function(text) { console.log(text + ':'); },
-  pass: function(message) { console.log('PASS: ' + message); },
-  fail: function(message) { console.log('FAIL: ' + message); },
+  pass: function(name, message) { console.log('PASS ' + name + ': ' + message); },
+  fail: function(name, message) { console.log('FAIL ' + name + ': ' + message); },
   summary: function(npass, nfail) {
     console.log('----');
     console.log('PASS: ' + npass);
