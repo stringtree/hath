@@ -282,12 +282,63 @@ var default_options = {
   message: 'assert'
 };
 ```
-**hath** will use the above defaults for any fields not specified in the options object, so feel free to override (say) just the summary, or just pass and fail, etc.
+**hath** will use the above defaults for any fields not specified in the options object,
+so feel free to override (say) just the summary, or just pass and fail, etc.
 
 ### Exceptions and Events
 
-**hath** does nothing to catch exceptions or events. If you care about the exception or event behaviour of your code,
-you will need to catch them explicitly in your tests. Un-caught exceptions will typically stop the test process and display a stack trace. 
+**hath** does nothing to catch exceptions or events.
+If you care about the exception or event behaviour of your code, you will need to catch them explicitly in your tests.
+Un-caught exceptions will typically stop the test process and display a stack trace.
+
+For example:
+
+```js
+function mayThrow(x) {
+	if ('grenade' === x) throw new Error('kaboom!');
+}
+
+function testExceptions(t, done) {
+	try {
+		mayThrow('hello');
+		t.assert(true, 'mayThrow without secret word should not throw');
+	} catch (e) {
+		t.assert(false, 'mayThrow without secret word should not throw');
+	}
+	try {
+		mayThrow('grenade');
+		t.assert(false, 'mayThrow with secret word should throw');
+	} catch (e) {
+		t.assert(true, 'mayThrow with secret word should throw');
+	}
+	done();
+}
+```
+
+If that seems a bit wordy, remember that you can always define your own assert helper, perhaps like:
+
+```js
+function codeThrows(code) {
+	try {
+		code();
+		return false;
+	} catch (e) {
+		return true;
+	}
+}
+
+function testExceptions(t, done) {
+	t.assert(!codeThrows(function() {
+		mayThrow('hello');
+	}), 'mayThrow without secret word should not throw');
+
+	t.assert(codeThrows(function() {
+		mayThrow('grenade');
+	}), 'mayThrow with secret word should throw');
+
+	done();
+}
+```
 
 ### Exports and require.main
 
