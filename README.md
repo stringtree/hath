@@ -197,48 +197,55 @@ if (module === require.main) {
 }
 ```
 
-There are plenty of third-party modules which can help you boil down complex situations into a single truthy value. For example, I like [Stringtree Checklist](https://www.npmjs.com/package/stringtree-checklist) for the common-but-tricky task of comparing collections which may not always be in the same order.
+There are plenty of third-party modules which can help you boil down complex situations into a single truthy value.
+For example, I like [Stringtree Checklist](https://www.npmjs.com/package/stringtree-checklist) for the
+common-but-tricky task of comparing collections which may not always be in the same order.
 
 ### Shared setup
 
-Some test frameworks have special 'before' and 'after' functions which are automatically applied to all test functions. **hath** deliberately lacks these kinds of features as they impose a particular way of working. The ease of callbacks in JavaScript make such things very easy to achieve, anyway, without any magic.
+Some test frameworks have special 'before' and 'after' functions which are automatically applied to all test functions.
+**hath** deliberately lacks these kinds of features as they impose a particular way of working.
+The ease of callbacks in JavaScript and the simplicity of **hath** make such things very easy to achieve, anyway,
+without any magic.
+
+For code run before each test:
 
 ```js
 var Hath = require('hath');
 
-var sofar = [];
-
 function setup(code) {
-  sofar = [1, 2];
-  code();
+  var sofar = [1, 2];
+  code(sofar);
 }
 
-function testEmpty(t, done) {
-  t.assertEqual(sofar.length, 0);
-  done();
-} 
-
 function testSingle(t, done) {
-  setup(function() {
+  setup(function(sofar) {
     sofar.push(3);
-    t.assertEqual(sofar.length, 3);
+    t.assert(sofar.length === 3);
     done();
   });
 } 
 
 function testDouble(t, done) {
-  setup(function() {
+  setup(function(sofar) {
     sofar.push(3);
     sofar.push(4);
-    t.assertEqual(sofar.length, 4);
+    t.assert(sofar.length === 4);
     done();
   });
 } 
 
+// test with different setup
+function testEmpty(t, done) {
+  var sofar = [];
+  t.assert(sofar.length === 0);
+  done();
+}
+
 module.exports = Hath.suite('tt', [
-  testEmpty,
   testSingle,
-  testDouble
+  testDouble,
+  testEmpty,
 ]);
 
 if (module === require.main) {
@@ -253,11 +260,61 @@ Although this approach can seem a bit clumsy compared with magical functions, it
 * You can insert your own code before and after the setup function
 * setup is just an ordinary function, no special names or annotations needed
 
+Running code before or after a whole suite of tests is even simpler. Just add your setup code at the start
+and/or end of the array of test functions which form the test suite.
+Such functions are passed the running test context, just like any other test function, including a
+'scratchpad' object _t.locals_ where you may put whatever you like.
+You do not need to make any assertions if you don't wan't to, but do remember to call 'done' when complete.
+
+For example:
+
+```js
+var Hath = require('hath');
+
+function setup(t, done) {
+  t.locals.name = 'Darkness';
+  t.locals.compare = function(age) { return age < 99 ? 'old' : 'young' };
+  done();
+}
+
+function testOriginatingName(t, done) {
+  t.assert(t.locals.name.length === 8);
+  t.locals.lyric = 'hello ' + t.locals.name;
+  done();
+}
+
+function testRelationship(t, done) {
+  t.assert(t.locals.compare(100) === 'young');
+  t.locals.lyric += ', my ' + t.locals.compare(50) + ' friend';
+  done();
+}
+
+function teardown(t, done) {
+  console.log(t.locals.lyric);
+  done();
+}
+
+module.exports = function(t, done) {
+    t.run('Songs', [
+      setup,
+      testOriginatingName,
+      testRelationship,
+      teardown
+    ], done);
+};
+
+if (module === require.main) {
+  module.exports(new Hath());
+}
+```
+
 ### Custom Output
 
 The job of a test framework is to run tests, collect and present the results.
-There are lots of different possibilities for how to present test results, so **hath** makes it easy to tailor output 
-however you like. By default **hath** writes test output using console.log, but this is easily overriden by supplying definitions to the Hath() constructor.
+There are lots of different possibilities for how to present test results,
+so **hath** makes it easy to tailor output however you like.
+By default **hath** writes test output using console.log, but this is easily overriden
+by supplying definitions to the Hath() constructor.
 
 The Hath() constructor takes a single JavaScript object as a parameter, and looks for the following fields:
 * **title** - function taking a single parameter. Called with a test suite description just before it starts

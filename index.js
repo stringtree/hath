@@ -23,6 +23,7 @@ function Hath(options) {
   this.options.message = this.options.message || default_options.message; 
   this.npass = 0;
   this.nfail = 0;
+  this.locals = {};
 }
 
 function assert(condition, message) {
