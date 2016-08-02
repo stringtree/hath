@@ -50,8 +50,10 @@ function sequence(t, steps, done) {
   var message;
 
   function dotest(test, complete) {
-      t.label(test.name);
-      test(t, complete);
+	  setImmediate(function() {
+	      t.label(test.name);
+	      test(t, complete);
+	  })
   }
 
   function complete(err) {
