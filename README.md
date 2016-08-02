@@ -84,18 +84,22 @@ Evaluate the supplied expression.
     t.label(text)
 
 Use the supplied text instead of the test function name as a label in test output.
+If you want to do this, just add a call to t.label in your test function somewhere before your asserts.
 
 ### run
 
-    t.run(label, steps: array(function(t, done)), next: function(npass, nfail))
+    t.run(title, steps: array(function(t, done)), next: function(npass, nfail))
 
-Send the supplied test suite label to the 'label' handler, then run the supplied test steps in sequence. Finally, call the supplied callback with the count of passes and failures.
+Send the supplied test suite title to the 'title' handler, then run the supplied test steps in sequence.
+Finally, call the supplied callback with the count of passes and failures.
 
 ### suite
 
      var test = Hath.suite(label, steps: array(function(t, done)))
 
-Convenience method for the common case of constructing a test from a list of other tests. Note that this is a 'static' function, called on the 'class' rather than an instantiated test runner. This means that it can be done at any point in your code, typically before deciding whether to create a fresh test runner or to use an existing one.
+Convenience method for the common case of constructing a test from a list of other tests.
+Note that this is a 'static' function, called on the 'class' rather than an instantiated test runner.
+This means that it can be done at any point in your code, typically before deciding whether to create a fresh test runner or to use an existing one.
 
 The suite function is defined as:
 
@@ -256,9 +260,9 @@ There are lots of different possibilities for how to present test results, so **
 however you like. By default **hath** writes test output using console.log, but this is easily overriden by supplying definitions to the Hath() constructor.
 
 The Hath() constructor takes a single JavaScript object as a parameter, and looks for the following fields:
-* **label** - function taking a single parameter. Called with a test suite description just before it starts  
-* **pass** - function taking a single parameter. Called with the function name and the supplied (or defaulted) message for every assert which succeeds
-* **fail** - function taking a single parameter. Called with the function name and the supplied (or defaulted) message for every assert which fails
+* **title** - function taking a single parameter. Called with a test suite description just before it starts
+* **pass** - function taking two parameters. Called with the function name and the supplied (or defaulted) message for every assert which succeeds
+* **fail** - function taking two parameters. Called with the function name and the supplied (or defaulted) message for every assert which fails
 * **summary** - function taking two parameters. Called with number of passes and number of fails after the final test completes
 * **message** - default message for _assert_ if none is supplied
 
@@ -266,7 +270,7 @@ As an example, the default options in the source code are:
 
 ```js
 var default_options = {
-  label: function(text) { console.log(text + ':'); },
+  title: function(text) { console.log(text + ':'); },
   pass: function(name, message) { console.log('PASS ' + name + ': ' + message); },
   fail: function(name, message) { console.log('FAIL ' + name + ': ' + message); },
   summary: function(npass, nfail) {

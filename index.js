@@ -2,7 +2,7 @@
 var util = require('util');
 
 var default_options = {
-  label: function(text) { console.log(text + ':'); },
+  title: function(text) { console.log(text + ':'); },
   pass: function(label, message) { console.log('PASS ' + label + ': ' + message); },
   fail: function(label, message) { console.log('FAIL ' + label + ': ' + message); },
   summary: function(npass, nfail) {
@@ -16,7 +16,7 @@ var default_options = {
 
 function Hath(options) {
   this.options = options || {};
-  this.options.label = this.options.label || default_options.label; 
+  this.options.title = this.options.title || default_options.title;
   this.options.pass = this.options.pass || default_options.pass; 
   this.options.fail = this.options.fail || default_options.fail; 
   this.options.summary = this.options.summary || default_options.summary; 
@@ -50,8 +50,7 @@ function sequence(t, steps, done) {
   var message;
 
   function dotest(test, complete) {
-      var label = test.name;
-      t.label(label);
+      t.label(test.name);
       test(t, complete);
   }
 
@@ -68,9 +67,9 @@ function sequence(t, steps, done) {
   dotest(steps[count], complete);
 }
 
-function run(label, steps, next) {
+function run(title, steps, next) {
   var self = this;
-  self.options.label(label);
+  self.options.title(title);
   sequence(this, steps, function(err) {
     if (next) {
       next(self.npass, self.nfail);
