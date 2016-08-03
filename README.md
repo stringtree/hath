@@ -47,18 +47,23 @@ if (module === require.main) {
 ```
 ## Design Philosophy
 
-I have been practicing Test-Driven Development (TDD) since the term was invented.
-I was part of the team who helped Kent Beck write [his seminal book on the subject](https://www.amazon.co.uk/Test-Driven-Development-Addison-Wesley-Signature/dp/0321146530/) back in 2002,
-and I rely on unit tests every working day, in many different programming languages. Right now, I'm using node.js.
-
-I value the simplest possible tools which each do one job and do it well.
-
 Programming is fun because software can do _anything_, so it feels especially limiting to have to fight against
 the very software tools which are supposed to be helping create code.
+
+I have been practicing Test-Driven Development (TDD) since the term was invented.
+I was part of the team who helped Kent Beck write
+[his seminal book on the subject](https://www.amazon.co.uk/Test-Driven-Development-Addison-Wesley-Signature/dp/0321146530/)
+back in 2002,
+and I rely on unit tests every working day, in many different programming languages.
+Right now, I'm using node.js.
+
 I am fed up with node test frameworks which force me to write my tests their way, pull in reams of dependencies,
 and still don't allow me to do simple things such as running different sets of tests for different uses.
 
-I want to bring unit testing back into programming, in a way that makes it easy to use all the programming skills at our disposal.
+I value the simplest possible tools which each do one job and do it well.
+
+I want to bring unit testing back into programming, in a way that makes it easy to use all the
+programming skills at our disposal.
 
 Let's get coding!
 * Frank Carver @efficacy http://frankcarver.me
@@ -69,22 +74,27 @@ Let's get coding!
 
     var t = new Hath(optional output specification object)
 
-Create a new **hath** test runner, using the specified output functions, or defaults where not specified. Set the pass and fail counts to zero ready for a new set of tests. 
+Create a new **hath** test runner, using the specified output functions, or defaults where not specified.
+Set the pass and fail counts to zero ready for a new set of tests.
 
 ### assert
 
     t.assert(expression, optional message)
 
 Evaluate the supplied expression.
-* If it is truthy, call the 'pass' handler with the supplied message (or a default if not supplied)
-* If it is falsy, call the 'fail' handler with the supplied message (or a default if not supplied)
+* If it is truthy, call the 'pass' handler with the label for this test and the supplied message
+(or a default if not supplied)
+* If it is falsy, call the 'fail' handler with the label for this test and the supplied message
+(or a default if not supplied)
+
+Collect a running total of the number of passes and fails,ready to pass to the 'summary' handler after the tests.
 
 ### label
 
     t.label(text)
 
-Use the supplied text instead of the test function name as a label in test output.
-If you want to do this, just add a call to t.label in your test function somewhere before your asserts.
+By default, **hath** passes the test function name as a label to the 'pass' and 'fail' handlers
+If you want a different label, just add a call to t.label in your test function somewhere before your asserts.
 
 ### run
 
@@ -99,7 +109,8 @@ Finally, call the supplied callback with the count of passes and failures.
 
 Convenience method for the common case of constructing a test from a list of other tests.
 Note that this is a 'static' function, called on the 'class' rather than an instantiated test runner.
-This means that it can be done at any point in your code, typically before deciding whether to create a fresh test runner or to use an existing one.
+This means that it can be done at any point in your code, typically before deciding whether to create a
+fresh test runner or to use an existing one.
 
 The suite function is defined as:
 
@@ -112,13 +123,16 @@ function suite(label, steps) {
 ```
 
 ## Usage Hints
-**hath** is flexible because of its simplicity. Sometimes it seems as if some feature is missing which some other framework provides, but always remember that _it's just code_ so there is usually a simple work-around in your tests. For example:
+**hath** is flexible because of its simplicity. Sometimes it seems as if some feature is missing which some
+other framework provides, but always remember that _it's just code_ so there is usually a simple work-around
+in your tests. For example:
 
 ### Extra Asserts
 **hath** comes with just one built-in assert method:
 * **t.assert**(expression, optional message)
 
-This covers the great majority of cases, but sometimes a test might be clearer with a different assert. Don't be afraid to write code which calls **t.assert**. 
+This covers the great majority of cases, but sometimes a test might be clearer with a different assert.
+Don't be afraid to write code which calls **t.assert**.
 
 As an example, imagine you wish to test that two values _do not_ equal each other
 ```js
@@ -317,10 +331,14 @@ By default **hath** writes test output using console.log, but this is easily ove
 by supplying definitions to the Hath() constructor.
 
 The Hath() constructor takes a single JavaScript object as a parameter, and looks for the following fields:
-* **title** - function taking a single parameter. Called with a test suite description just before it starts
-* **pass** - function taking two parameters. Called with the function name and the supplied (or defaulted) message for every assert which succeeds
-* **fail** - function taking two parameters. Called with the function name and the supplied (or defaulted) message for every assert which fails
-* **summary** - function taking two parameters. Called with number of passes and number of fails after the final test completes
+* **title** - function taking a single parameter.
+Called with a test suite description just before it starts
+* **pass** - function taking two parameters.
+Called with the function name and the supplied (or defaulted) message for every assert which succeeds
+* **fail** - function taking two parameters.
+Called with the function name and the supplied (or defaulted) message for every assert which fails
+* **summary** - function taking two parameters.
+Called with number of passes and number of fails after the final test completes
 * **message** - default message for _assert_ if none is supplied
 
 As an example, the default options in the source code are:
@@ -399,11 +417,13 @@ function testExceptions(t, done) {
 
 ### Exports and require.main
 
-For speed of development, I like to be able to run any of my test files on their own as well as part of an overall test suite. 
+For speed of development, I like to be able to run any of my test files on their own as well as part of an overall
+test suite.
 This approach means that I can easily work with a single test file until I get it passing,
 then run a different test file, a group of test files, or the whole test suite without any changes to the code.
 
-To make this work, each test file needs to be both runnable on its own, **and** callable as part of a larger group of tests. 
+To make this work, each test file needs to be both runnable on its own, **and** callable as part of a larger group
+of tests.
 This is certainly possible in Node.js, but it can be a little wordy.
 As you may have noticed in the examples above, each test file ends with assigning a function to 'module.exports'
 and (if the test file has been called on its own) running the exported function using a fresh Hath instance.
@@ -424,11 +444,18 @@ if (module === require.main) {
   module.exports(new Hath());
 }
 ```
-This is a principle known as [_self similarity_](http://www3.amherst.edu/~rloldershaw/nature.html) and it can be very powerful.
+This is a principle known as [_self similarity_](http://www3.amherst.edu/~rloldershaw/nature.html)
+and it can be very powerful.
+
+As a small side-note, the example code in this document assigns a function to _module.exports_, which is a common idion
+indicaing that this function is what a caller will get when it uses, for example, ```require('./mytest')```.
+Slightly less common is the use of _module_exports_ as a function within the same file.
+This is a convenience to save the need to create a separate variable just to assign to _module_exports_.
 
 You may have noticed that the top-level call in the require.main of each example does not pass a callback.
 If no callback is provided, **hath** sends test summary output to its configured 'summary' handler instead.
-By default, this writes to console.out, but is easily changed by supplying overrides to the _new Hath()_ constructor as described above. 
+By default, this writes to console.out, but is easily changed by supplying overrides to the _new Hath()_
+constructor as described above.
 
 ## Footnote
 
