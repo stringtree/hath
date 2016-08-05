@@ -155,7 +155,8 @@ As with 'suite' this is a 'static' function, called on the 'class' rather than a
 Note that typically all test definition files are loaded with 'require' before any tests are executed.
 This is a good thing in that it ensures that helpers are made available before they are used, but it
 does mean that all tests run with the same set of helpers.
-Please do not be tempted to define different helpers with the same name - things will not go as expected!  
+Please _do not_ be tempted to define different helpers with the same name -
+things are unlikely to go as expected!
 
 The helper function is defined as:
 
@@ -167,8 +168,8 @@ function helper(name, fn) {
 
 ## Usage Hints
 **hath** is flexible because of its simplicity. Sometimes it seems as if some feature is missing which some
-other framework provides, but always remember that _it's just code_ so there is usually a simple work-around
-in your tests. For example:
+other framework provides, but always remember that _it's just code_ so there is usually a simple and
+programmer-friendly way to achieve what you want to do. For example:
 
 ### Extra Asserts
 **hath** comes with just one built-in assert method:
@@ -178,7 +179,8 @@ This covers the great majority of cases, but sometimes a test might be clearer w
 Don't be afraid to write code which calls **t.assert**.
 
 As an example, some of the parser tests in the example above could probably be made a bit more readable,
-and the test output a bit more useful, by writing a custom assertion which knows how to call the parser.
+and the test output a bit more useful, by writing a custom assertion which knows how to call the parser
+and can explain a but more of what went wrong if a test fails.
 
 There are two basic ways to achieve this.
 
@@ -195,7 +197,7 @@ var Hath = require('hath');
 
 var parse = require('./parser');
 
-// declare a local function and call it
+// Simple approach: declare a local function and call it
 
 function testInvalidWithFunction(t, done) {
   function assertProduction(input, expected, message) {
@@ -216,7 +218,7 @@ function testInvalidWithFunction(t, done) {
   done();
 } 
 
-// define a helper which is available everywhere 
+// Flexible approach: define a helper which is available everywhere
 
 Hath.helper('assertProduction', function(input, expected, message) {
   message = message || '' + input + ' => ' + expected;
@@ -240,39 +242,6 @@ function testInvalidWithHelper(t, done) {
 module.exports = Hath.suite('Custom Assertions', [
   testInvalidWithFunction,
   testInvalidWithHelper
-]);
-
-if (module === require.main) {
-  module.exports(new Hath());
-}
-```
-
-If you want to go a bit further, and need similar asserts in several places in your project,
-you can easily create your own derivative of hath which has whatever extras you like:
-
-Create a file, say _hathmore.js_
-```js
-var Hath = require('hath');
-
-Hath.prototype.assertNotEqual = function assertNotEqual(actual, expected, message) {
-  message = message || 'should not be ' + expected + ' but was ' + actual + '';
-  this.assert(actual !== expected, message);
-};
-
-module.exports = Hath;
-```
-Then you can use that instead:
-
-```js
-var Hath = require('./hathmore');
-
-function testNE(t, done) {
-  t.assertNotEqual(5, 4);
-  done();
-} 
-
-module.exports = Hath.suite('tt', [
-  testNE
 ]);
 
 if (module === require.main) {

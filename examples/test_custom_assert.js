@@ -2,7 +2,7 @@ var Hath = require('../index');
 
 var parse = require('./parser');
 
-// declare a local function and call it
+//Simple approach: declare a local function and call it
 
 function testInvalidWithFunction(t, done) {
   function assertProduction(input, expected, message) {
@@ -23,7 +23,7 @@ function testInvalidWithFunction(t, done) {
   done();
 } 
 
-// define a helper which is available everywhere 
+// Flexible approach: define a helper which is available everywhere
 
 Hath.helper('assertProduction', function(input, expected, message) {
   message = message || '' + input + ' => ' + expected;
@@ -45,7 +45,7 @@ function testInvalidWithHelper(t, done) {
 } 
 
 module.exports = Hath.suite('Custom Assertions', [
-  testInvalidWithFunction,
+//  testInvalidWithFunction,
   testInvalidWithHelper
 ]);
 
