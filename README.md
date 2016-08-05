@@ -143,6 +143,25 @@ function suite(label, steps) {
     t.run(label, steps, done);
   };
 }
+
+### helper
+
+     Hath.helper(name, function)
+
+Convenience method for the common case of defining a function which is available in multiple tests.
+As with 'suite' this is a 'static' function, called on the 'class' rather than an instantiated test runner.
+
+Note that typically all test definition files are loaded with 'require' before any tests are executed.
+This is a good thing in that it ensures that helpers are made available before they are used, but it
+does mean that all tests run with the same set of helpers.
+Please do not be tempted to define different helpers with the same name - things will not go as expected!  
+
+The helper function is defined as:
+
+```js
+function helper(name, fn) {
+  Hath.prototype[name] = fn;
+}
 ```
 
 ## Usage Hints
@@ -157,43 +176,69 @@ in your tests. For example:
 This covers the great majority of cases, but sometimes a test might be clearer with a different assert.
 Don't be afraid to write code which calls **t.assert**.
 
-As an example, imagine you wish to test that two values _do not_ equal each other
+As an example, some of the parser tests in the example above could probably be made a bit more readable,
+and the test output a bit more useful, by writing a custom assertion which knows how to call the parser.
+
+There are two basic ways to achieve this.
+
+The simplest is just to write a function within the test function
+and call it as required. This has the big advantage that all variables in the test function are in scope,
+particularly the test context 't'. The disadvantage of this method is that the custom assert is only available
+in a single test.
+
+If you need the same custom assertion in multiple tests, you can define a 'helper' which will be available
+to all tests using the same 'Hath'.
+ 
 ```js
 var Hath = require('hath');
 
-// manual approach, just use t.assert
-function testManual(t, done) {
-  t.assert(3 !== 4, 'three should not be four');
-  done();
-} 
+var parse = require('./parser');
 
 // declare a local function and call it
-function testNE(t, done) {
-  function assertNotEqual(actual, expected, message) {
-    message = message || 'should not be ' + expected + ' but was ' + actual + '';
-    t.assert(actual !== expected, message);
+
+function testInvalidWithFunction(t, done) {
+  function assertProduction(input, expected, message) {
+    message = message || '' + input + ' => ' + expected;
+    var output = parse(input);
+    if (output === expected) {
+      t.assert(true, message);
+    } else {
+      t.assert(false. message + '(was ' + output + ')');
+    }
   }
-  
-  assertNotEqual(3, 4);
+
+  assertProduction(null, null);
+  assertProduction(undefined, null);
+  assertProduction('', null, 'empty => null');
+  assertProduction('  ', null, 'spaces => null');
+  assertProduction('\n', null, 'newline => null');
   done();
 } 
 
-// to make an assert which is a 'first class citzen', 
-// create one which uses **this**, and bind it to the hath test object
-function assertNotEqual(actual, expected, message) {
-  message = message || 'should not be ' + expected + ' but was ' + actual + '';
-  this.assert(actual !== expected, message);
-}
-function testNE2(t, done) {
-  t.assertNotEqual = assertNotEqual;
-  t.assertNotEqual(5, 4);
+// define a helper which is available everywhere 
+
+Hath.helper('assertProduction', function(input, expected, message) {
+  message = message || '' + input + ' => ' + expected;
+  var output = parse(input);
+  if (output === expected) {
+    this.assert(true, message);
+  } else {
+    t.assert(false. message + '(was ' + output + ')');
+  }
+});
+
+function testInvalidWithHelper(t, done) {
+  t.assertProduction(null, null);
+  t.assertProduction(undefined, null);
+  t.assertProduction('', null, 'empty => null');
+  t.assertProduction('  ', null, 'spaces => null');
+  t.assertProduction('\n', null, 'newline => null');
   done();
 } 
 
-module.exports = Hath.suite('tt', [
-  testManual,
-  testNE,
-  testNE2
+module.exports = Hath.suite('Custom Assertions', [
+  testInvalidWithFunction,
+  testInvalidWithHelper
 ]);
 
 if (module === require.main) {
