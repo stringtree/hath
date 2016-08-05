@@ -19,32 +19,55 @@ and easy control of output format and destination.
 ```js
 var Hath = require('hath');
 
-function testOddNumbers(t, done) {
-  t.assert(3 > 1);
-  t.assert(5 > 3);
+var parse = require('./parser');
+
+function testInvalid(t, done) {
+  t.assert(null === parse(null), 'null => null');
+  t.assert(null === parse(undefined), 'undefined => null');
+  t.assert(null === parse(''), 'space => null');
+  t.assert(null === parse('  '), 'spaces => null');
+  t.assert(null === parse('\n'), 'newline => null');
   done(); 
 }
 
-function testEvenNumbers(t, done) {
-  t.assert(4 > 2, 'even numbers should work, too');
-  done(); 
+function testNumbers(t, done) {
+  t.assert(0 === parse('0'), '0');
+  t.assert(1 === parse('1'), 'single digit');
+  t.assert(12 === parse('12'), 'multiple digits');
+  t.assert(-52 === parse('-52'), 'negative');
+  done();
 }
 
-function testSameNumbers(t, done) {
-  t.assert(4 === (2 * 2), 'two times two is four');
-  done(); 
+function testSymbols(t, done) {
+  t.assert(true === parse('t'), 'true');
+  t.assert(false === parse('f'), 'false');
+  t.assert(null === parse('n'), 'null');
+  done();
 }
 
-module.exports = Hath.suite('Numbers', [
-  testOddNumbers,
-  testEvenNumbers,
-  testSameNumbers
+function testStrings(t, done) {
+  t.assert('' === parse('""'), 'empty');
+  t.assert('a' === parse('"a"'), 'single character');
+  t.assert('bc' === parse('"bc"'), 'multiple character');
+  t.assert("f e" === parse('"f e"'), 'string with spaces');
+  t.assert("2" === parse('"2"'), 'string with number');
+  done();
+}
+
+module.exports = Hath.suite('Parser', [
+  testInvalid,
+  testNumbers,
+  testSymbols,
+  testStrings
 ]);
 
 if (module === require.main) {
   module.exports(new Hath());
 }
 ```
+
+( see examples/test_example.js )
+
 ## Design Philosophy
 
 Programming is fun because software can do _anything_, so it feels especially limiting to have to fight against
@@ -369,24 +392,22 @@ Un-caught exceptions will typically stop the test process and display a stack tr
 For example:
 
 ```js
-function mayThrow(x) {
-	if ('grenade' === x) throw new Error('kaboom!');
-}
-
 function testExceptions(t, done) {
-	try {
-		mayThrow('hello');
-		t.assert(true, 'mayThrow without secret word should not throw');
-	} catch (e) {
-		t.assert(false, 'mayThrow without secret word should not throw');
-	}
-	try {
-		mayThrow('grenade');
-		t.assert(false, 'mayThrow with secret word should throw');
-	} catch (e) {
-		t.assert(true, 'mayThrow with secret word should throw');
-	}
-	done();
+  try {
+    parse('"Frank"');
+    t.assert(true, 'terminated string should not throw');
+  } catch (e) {
+    t.assert(false, 'terminated string should not throw');
+  }
+
+  try {
+    parse('"Frank');
+    t.assert(false, 'unterminated string should throw');
+  } catch (e) {
+    t.assert(true, 'unterminated string should throw');
+  }
+
+  done();
 }
 ```
 
@@ -394,26 +415,28 @@ If that seems a bit wordy, remember that you can always define your own assert h
 
 ```js
 function codeThrows(code) {
-	try {
-		code();
-		return false;
-	} catch (e) {
-		return true;
-	}
+  try {
+    code();
+    return false;
+  } catch (e) {
+    return true;
+  }
 }
 
-function testExceptions(t, done) {
-	t.assert(!codeThrows(function() {
-		mayThrow('hello');
-	}), 'mayThrow without secret word should not throw');
+function testExceptionsWithHelper(t, done) {
+  t.assert(!codeThrows(function() {
+    parse('"Frank"');
+  }), 'terminated string should not throw');
 
-	t.assert(codeThrows(function() {
-		mayThrow('grenade');
-	}), 'mayThrow with secret word should throw');
+  t.assert(codeThrows(function() {
+    parse('"Frank');
+  }), 'unterminated string should throw');
 
-	done();
+  done();
 }
 ```
+
+( see examples/test_exceptions.js )
 
 ### Exports and require.main
 
@@ -424,7 +447,6 @@ then run a different test file, a group of test files, or the whole test suite w
 
 To make this work, each test file needs to be both runnable on its own, **and** callable as part of a larger group
 of tests.
-This is certainly possible in Node.js, but it can be a little wordy.
 As you may have noticed in the examples above, each test file ends with assigning a function to 'module.exports'
 and (if the test file has been called on its own) running the exported function using a fresh Hath instance.
 
@@ -432,7 +454,7 @@ By taking this approach, every test file is also a test function, exposing the s
 A file which runs a sequence of other test files has the same structure as a file running individual tests:
 
 ```js
-const Hath = require('hath');
+var Hath = require('hath');
 
 module.exports = Hath.suite('All tests', [
   require('./test_symbols'),
@@ -452,7 +474,7 @@ indicaing that this function is what a caller will get when it uses, for example
 Slightly less common is the use of _module_exports_ as a function within the same file.
 This is a convenience to save the need to create a separate variable just to assign to _module_exports_.
 
-You may have noticed that the top-level call in the require.main of each example does not pass a callback.
+You may also have noticed that the top-level call in the require.main of each example does not pass a 'done' callback.
 If no callback is provided, **hath** sends test summary output to its configured 'summary' handler instead.
 By default, this writes to console.out, but is easily changed by supplying overrides to the _new Hath()_
 constructor as described above.
