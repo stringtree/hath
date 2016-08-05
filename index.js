@@ -92,3 +92,9 @@ function suite(label, steps) {
 }
 
 module.exports.suite = suite;
+
+function helper(name, fn) {
+  Hath.prototype[name] = fn;
+}
+
+module.exports.helper = helper;
