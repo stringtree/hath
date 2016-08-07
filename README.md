@@ -327,17 +327,17 @@ function resolve_error(e, s) {
 }
 
 function testParallelLoad(t, done) {
-	load([
+  load([
     resolve_delay('cherry'),
     resolve_delay('apple'),
     resolve_delay('damson'),
     resolve_error('resource not found', 'exotic fruit'),
     resolve_delay('banana')
   ], function(err, values) {
-	  console.log('actual loaded values: ', values);
-	  t.assertChecklist(['apple', 'banana', 'cherry', 'damson'], values)
-	  done();
-	});
+    console.log('actual loaded values: ', values);
+	t.assertChecklist(['apple', 'banana', 'cherry', 'damson'], values)
+	done();
+  });
 }
 
 module.exports = Hath.suite('Loader', [
