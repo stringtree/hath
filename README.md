@@ -248,10 +248,108 @@ if (module === require.main) {
   module.exports(new Hath());
 }
 ```
+( see examples/test_custom_assert.js )
 
 There are plenty of third-party modules which can help you boil down complex situations into a single truthy value.
 For example, I like [Stringtree Checklist](https://www.npmjs.com/package/stringtree-checklist) for the
 common-but-tricky task of comparing collections which may not always be in the same order.
+
+For a more meaty example of how this might work imagine we are developing an asynchronous loader component,
+whose job it is is to call an array of asynchronous resolver functions in parallel and collect any successful results.
+This is a common node.js implementation pattern, for example when gathering results for several
+different web services. Here's our code:
+
+```js
+var async = require('async');
+
+module.exports = function loader(resolvers, next) {
+  var ret = [];
+  var catchers = [];
+  async.forEach(resolvers, function(r, done) {
+    catchers.push(function(done) {
+      r(function(err, value) {
+        if (!err) ret.push(value);
+        done();
+      });
+    });
+    done();
+  }, function() {
+    async.parallel(catchers, function() {
+      next(null, ret);
+    });
+  });
+}
+```
+
+It makes significant use of async functions, and the order of the results in the 'ret' array depends on
+what order the resolvers happen to be called, and how long each one takes to respond.
+The one thing we can't do is just compare the rurned array against a correct example, it would fail more
+often than not.
+
+Yet we stil want to test that it does the right thing for quick resonses, for slow responses,
+out-of-sequence responses and for errors.
+
+Using **hath** and a custom assert built using _Stringtree Checklist_ such a test might look like:
+
+```js
+var Hath = require('hath');
+var Checklist = require('stringtree-checklist');
+
+var load = require('./async_loader');
+
+Hath.helper('assertChecklist', function(expected, actual) {
+  var self = this;
+	var ck = new Checklist(expected);
+	actual.forEach(function(i) {
+	  ck.tick(i, function (err, message) {
+	    if (err) t.assert(false, err);
+	  });
+	});
+	ck.check(function(err, message) {
+	  var message = 'all values loaded once each';
+	  if (err) message = err;
+	  self.assert(!err, message);
+	});
+});
+
+function resolve_delay(s) {
+  return function(done) {
+    setTimeout(function() {
+      done(null, s);
+    }, Math.random() * 100);
+  }
+}
+
+function resolve_error(e, s) {
+  return function(done) {
+    done(new Error(e), s);
+  }
+}
+
+function testParallelLoad(t, done) {
+	load([
+    resolve_delay('cherry'),
+    resolve_delay('apple'),
+    resolve_delay('damson'),
+    resolve_error('resource not found', 'exotic fruit'),
+    resolve_delay('banana')
+  ], function(err, values) {
+	  console.log('actual loaded values: ', values);
+	  t.assertChecklist(['apple', 'banana', 'cherry', 'damson'], values)
+	  done();
+	});
+}
+
+module.exports = Hath.suite('Loader', [
+  testParallelLoad
+]);
+
+if (module === require.main) {
+  module.exports(new Hath());
+}
+```
+
+( see examples/test_loader.js )
 
 ### Shared setup
 
