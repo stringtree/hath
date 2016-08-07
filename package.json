@@ -8,12 +8,16 @@
   },
   "license": "Apache-2.0",
   "repository": {
-    "type" : "git",
-    "url" : "http://github.com/stringtree/hath.git"
+    "type": "git",
+    "url": "http://github.com/stringtree/hath.git"
   },
-  "author" : {
-    "name" : "Frank Carver",
-    "email" : "frank@efsol.com",
-    "url" : "http://frankcarver.me/"
+  "author": {
+    "name": "Frank Carver",
+    "email": "frank@efsol.com",
+    "url": "http://frankcarver.me/"
+  },
+  "devDependencies": {
+    "async": "^2.0.1",
+    "stringtree-checklist": "^0.1.0"
   }
 }
