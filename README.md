@@ -274,8 +274,8 @@ module.exports = function loader(resolvers, next) {
     });
     done();
   }, function() {
-    async.parallel(catchers, function() {
-      next(null, ret);
+    async.parallel(catchers, function(err) {
+      next(err, ret);
     });
   });
 }
@@ -283,7 +283,7 @@ module.exports = function loader(resolvers, next) {
 
 It makes significant use of async functions, and the order of the results in the 'ret' array depends on
 what order the resolvers happen to be called, and how long each one takes to respond.
-The one thing we can't do is just compare the rurned array against a correct example, it would fail more
+The one thing we can't do is just compare the rurned array against a 'correct' example, it would fail more
 often than not.
 
 Yet we stil want to test that it does the right thing for quick resonses, for slow responses,

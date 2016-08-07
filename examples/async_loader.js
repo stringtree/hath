@@ -12,8 +12,8 @@ module.exports = function loader(resolvers, next) {
     });
     done();
   }, function() {
-    async.parallel(catchers, function() {
-      next(null, ret);
+    async.parallel(catchers, function(err) {
+      next(err, ret);
     });
   });
 }
