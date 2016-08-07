@@ -110,7 +110,7 @@ Evaluate the supplied expression.
 * If it is falsy, call the 'fail' handler with the label for this test and the supplied message
 (or a default if not supplied)
 
-Collect a running total of the number of passes and fails,ready to pass to the 'summary' handler after the tests.
+Collect a running total of the number of passes and fails, ready to pass to the 'summary' handler after the tests.
 
 ### label
 
