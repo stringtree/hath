@@ -32,7 +32,7 @@ function assert(condition, message) {
     ++this.npass;
     this.options.pass(this.testlabel, message);
   } else {
-    ++this.fail;
+    ++this.nfail;
     this.options.fail(this.testlabel, message);
   }
 }
