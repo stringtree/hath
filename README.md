@@ -254,10 +254,10 @@ There are plenty of third-party modules which can help you boil down complex sit
 For example, I like [Stringtree Checklist](https://www.npmjs.com/package/stringtree-checklist) for the
 common-but-tricky task of comparing collections which may not always be in the same order.
 
-For a more meaty example of how this might work imagine we are developing an asynchronous loader component,
+For a more meaty example of how this might work imagine we are developing a loader component,
 whose job it is is to call an array of asynchronous resolver functions in parallel and collect any successful results.
 This is a common node.js implementation pattern, for example when gathering results for several
-different web services. Here's our code:
+different web services,and shows the power ofd node.js. Here's our code:
 
 ```js
 var async = require('async');
@@ -283,7 +283,7 @@ module.exports = function loader(resolvers, next) {
 
 It makes significant use of async functions, and the order of the results in the 'ret' array depends on
 what order the resolvers happen to be called, and how long each one takes to respond.
-The one thing we can't do is just compare the rurned array against a 'correct' example, it would fail more
+The one thing we can't do is just compare the returned array against a 'correct' example, it would fail more
 often than not.
 
 Yet we stil want to test that it does the right thing for quick resonses, for slow responses,
