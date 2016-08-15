@@ -1,19 +1,18 @@
 # hath
 
-"_For he that **hath**_, _to him shall be given_" (Mark 4:25, KJV)
-
-**hath** is a unit test framework which is just regular Javascript code.
-* You don't need  a special test runner, just _**node** your-test-file_.
-* There's no "magic" behaviour: no names are special, no folders are scanned.
-* Uses no fancy version-specific features, tested as far back as node 0.10
-* You can call any combination of single tests or groups of tests from your own code, or from other tests.
-* Which tests to run are defined in ordinary code using simple JavaScript data structures and 'require'
-* Tests are run in the sequence they are supplied, even if they are asynchronous 
-_(as long as they call the supplied callback when finished)_
+**hath** is a unit test framework, designed for Test-Driven Development.
 
 **hath** is small (one source file of around 100 lines) and has no dependencies so it won't bloat your project,
 yet it still includes a test runner, basic asserts, a convenience method for simpler test suite definitions,
-and easy control of output format and destination.  
+and easy control of output format and destination.
+
+* You don't need  a special test runner, just _**node** your-test-file_.
+* There's no "magic" behaviour: no names are special, no folders are scanned.
+* Uses no fancy version-specific features, tested as far back as node 0.10
+* You decide which combinations of single tests or groups of tests are run.
+* Tests to run are defined in ordinary code using simple JavaScript data structures and 'require'
+* Tests are run in the sequence they are supplied, even if they are asynchronous 
+_(as long as they call the supplied callback when finished)_
 
 ## Usage Example
 ```js
@@ -39,9 +38,9 @@ function testNumbers(t, done) {
 }
 
 function testSymbols(t, done) {
-  t.assert(true === parse('t'), 'true');
-  t.assert(false === parse('f'), 'false');
-  t.assert(null === parse('n'), 'null');
+  t.assert(true === parse('t'), 't => true');
+  t.assert(false === parse('f'), 'f => false');
+  t.assert(null === parse('n'), 'n => null');
   done();
 }
 
@@ -582,7 +581,7 @@ if (module === require.main) {
 This is a principle known as [_self similarity_](http://www3.amherst.edu/~rloldershaw/nature.html)
 and it can be very powerful.
 
-As a small side-note, the example code in this document assigns a function to _module.exports_, which is a common idion
+As a small side-note, the example code in this document assigns a function to _module.exports_, which is a common idiom
 indicaing that this function is what a caller will get when it uses, for example, ```require('./mytest')```.
 Slightly less common is the use of _module_exports_ as a function within the same file.
 This is a convenience to save the need to create a separate variable just to assign to _module_exports_.
@@ -600,3 +599,5 @@ constructor as described above.
 * **hath** _may_ just be a short name which was not already used for another npm module.
 
 You decide ;)
+
+_For he that **hath**_, _to him shall be given_" (Mark 4:25, KJV)
