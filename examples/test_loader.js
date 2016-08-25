@@ -18,6 +18,7 @@ Hath.helper('assertChecklist', function(expected, actual) {
   });
 });
 
+// stub operation which waits for a random amount of time before returning
 function resolve_delay(s) {
   return function(done) {
     setTimeout(function() {
@@ -26,7 +27,8 @@ function resolve_delay(s) {
   }
 }
 
-function resolve_error(e, s) {
+//stub operation which fails with an error
+function resolve_error(s, e) {
   return function(done) {
     done(new Error(e), s);
   }
@@ -37,7 +39,7 @@ function testParallelLoad(t, done) {
     resolve_delay('cherry'),
     resolve_delay('apple'),
     resolve_delay('damson'),
-    resolve_error('resource not found', 'exotic fruit'),
+    resolve_error('eggplant', 'resource not found'),
     resolve_delay('banana')
   ], function(err, values) {
 //    console.log('actual loaded values: ', values);
