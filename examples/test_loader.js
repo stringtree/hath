@@ -40,7 +40,7 @@ function testParallelLoad(t, done) {
     resolve_error('resource not found', 'exotic fruit'),
     resolve_delay('banana')
   ], function(err, values) {
-    console.log('actual loaded values: ', values);
+//    console.log('actual loaded values: ', values);
     t.assertChecklist(['apple', 'banana', 'cherry', 'damson'], values)
     done();
   });

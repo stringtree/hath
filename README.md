@@ -12,7 +12,19 @@ and easy control of output format and destination.
 * You decide which combinations of single tests or groups of tests are run.
 * Tests to run are defined in ordinary code using simple JavaScript data structures and 'require'
 * Tests are run in the sequence they are supplied, even if they are asynchronous 
-_(as long as they call the supplied callback when finished)_
+_(as long as they call the supplied callback when finished, of course)_
+
+## Index
+* [Usage Example](#usage-example)
+* [Design Philosophy](#design-philosophy)
+* [API](#api)
+* [Usage Hints](#usage-hints)
+* * [Extra Asserts](#extra-asserts)
+* * [Shared Setup](#shared-setup)
+* * [Custom Output](#custom-output)
+* * [Errors, Exceptions and Events](#errors-exceptions-and-events)
+* * [Suites, Exports and require.main](#suites-exports-and-requiremain)
+* [Footnote](#footnote)
 
 ## Usage Example
 ```js
@@ -177,9 +189,7 @@ programmer-friendly way to achieve what you want to do. For example:
 This covers the great majority of cases, but sometimes a test might be clearer with a different assert.
 Don't be afraid to write code which calls **t.assert**.
 
-As an example, some of the parser tests in the example above could probably be made a bit more readable,
-and the test output a bit more useful, by writing a custom assertion which knows how to call the parser
-and can explain a but more of what went wrong if a test fails.
+A simple example is the fairly common case of asserting that two values are the same, usually known as something like _assertEquals(a,b,message)_. If you have ever hopped between multiple test frameworks, you'll know that this can actually be a bit subtle. Do you put the expected value first, or the actual value. Does it use '==' or '==='. And so on. Hath lets you easily add your own _assertEquals_ which works however you want it to.
 
 There are two basic ways to achieve this.
 
@@ -190,46 +200,66 @@ in a single test.
 
 If you need the same custom assertion in multiple tests, you can define a 'helper' which will be available
 to all tests using the same 'Hath'.
+
+```js
+var Hath = require('hath');
+
+// Simple approach: declare a local function and call it
+
+function testConcatenationWithFunction(t, done) {
+
+  function assertEquals(expected, actual, message) {
+    message = message || 'assertEquals'
+    t.assert(actual === expected, '' + message + ': expected "' + expected + '" but was "' + actual + '"');
+  }
+
+  assertEquals('', [].join(' '), 'empty array');
+  assertEquals('hath', ['hath'].join(' '), 'single entry');
+  assertEquals('hath is cool', ['hath','is','cool'].join(' '), 'multiple entry');
+  done();
+} 
+
+// Flexible approach: define a helper which is available everywhere
+
+Hath.helper('assertEquals', function(expected, actual, message) {
+  message = message || 'assertEquals'
+  this.assert(actual === expected, '' + message + ': expected "' + expected + '" but was "' + actual + '"');
+});
+
+function testConcatenationWithHelper(t, done) {
+  t.assertEquals('', [].join(' '), 'empty array');
+  t.assertEquals('hath', ['hath'].join(' '), 'single entry');
+  t.assertEquals('hath is cool', ['hath','is','cool'].join(' '), 'multiple entry');
+  done();
+} 
+
+module.exports = Hath.suite('Custom Equals', [
+  testConcatenationWithFunction,
+  testConcatenationWithHelper
+]);
+
+if (module === require.main) {
+  module.exports(new Hath());
+}
+```
+( see examples/test_custom_equals.js )
+
+As a more meaty example, some of the parser tests from the previous section could probably be made a bit more readable,
+and the test output a bit more useful, by writing a custom assertion which knows how to call the parser
+and can explain a but more of what went wrong if a test fails.
  
 ```js
 var Hath = require('hath');
 
 var parse = require('./parser');
 
-// Simple approach: declare a local function and call it
-
-function testInvalidWithFunction(t, done) {
-  function assertProduction(input, expected, message) {
-    message = message || '' + input + ' => ' + expected;
-    var output = parse(input);
-    if (output === expected) {
-      t.assert(true, message);
-    } else {
-      t.assert(false. message + '(was ' + output + ')');
-    }
-  }
-
-  assertProduction(null, null);
-  assertProduction(undefined, null);
-  assertProduction('', null, 'empty => null');
-  assertProduction('  ', null, 'spaces => null');
-  assertProduction('\n', null, 'newline => null');
-  done();
-} 
-
-// Flexible approach: define a helper which is available everywhere
-
 Hath.helper('assertProduction', function(input, expected, message) {
   message = message || '' + input + ' => ' + expected;
   var output = parse(input);
-  if (output === expected) {
-    this.assert(true, message);
-  } else {
-    t.assert(false. message + '(was ' + output + ')');
-  }
+  this.assert(output === expected, message + '(was ' + output + ')');
 });
 
-function testInvalidWithHelper(t, done) {
+function testInvalid(t, done) {
   t.assertProduction(null, null);
   t.assertProduction(undefined, null);
   t.assertProduction('', null, 'empty => null');
@@ -239,8 +269,7 @@ function testInvalidWithHelper(t, done) {
 } 
 
 module.exports = Hath.suite('Custom Assertions', [
-  testInvalidWithFunction,
-  testInvalidWithHelper
+  testInvalid
 ]);
 
 if (module === require.main) {
@@ -253,10 +282,10 @@ There are plenty of third-party modules which can help you boil down complex sit
 For example, I like [Stringtree Checklist](https://www.npmjs.com/package/stringtree-checklist) for the
 common-but-tricky task of comparing collections which may not always be in the same order.
 
-For a more meaty example of how this might work imagine we are developing a loader component,
+For an example of how this might work imagine we are developing a loader component,
 whose job it is is to call an array of asynchronous resolver functions in parallel and collect any successful results.
 This is a common node.js implementation pattern, for example when gathering results for several
-different web services,and shows the power ofd node.js. Here's our code:
+different web services, and shows the power of node.js. Here's our code:
 
 ```js
 var async = require('async');
@@ -285,7 +314,7 @@ what order the resolvers happen to be called, and how long each one takes to res
 The one thing we can't do is just compare the returned array against a 'correct' example, it would fail more
 often than not.
 
-Yet we stil want to test that it does the right thing for quick resonses, for slow responses,
+Yet we still want to test that it does the right thing for quick responses, for slow responses,
 out-of-sequence responses and for errors.
 
 Using **hath** and a custom assert built using _Stringtree Checklist_ such a test might look like:
@@ -333,7 +362,7 @@ function testParallelLoad(t, done) {
     resolve_error('resource not found', 'exotic fruit'),
     resolve_delay('banana')
   ], function(err, values) {
-    console.log('actual loaded values: ', values);
+//    console.log('actual loaded values: ', values);
 	t.assertChecklist(['apple', 'banana', 'cherry', 'damson'], values)
 	done();
   });
@@ -350,10 +379,12 @@ if (module === require.main) {
 
 ( see examples/test_loader.js )
 
-### Shared setup
+To prove to yourself that this works, feel free to uncomment the console.log statement and run the test a few times using 
+``node examples/test_loader`` to see that the loaded values appear in a different order, but the tests still pass.
+
+### Shared Setup
 
 Some test frameworks have special 'before' and 'after' functions which are automatically applied to all test functions.
-**hath** deliberately lacks these kinds of features as they impose a particular way of working.
 The ease of callbacks in JavaScript and the simplicity of **hath** make such things very easy to achieve, anyway,
 without any magic.
 
@@ -403,11 +434,11 @@ if (module === require.main) {
 
 ```
 
-Although this approach can seem a bit clumsy compared with magical functions, it  has several subtle benefits:
+Although this approach can seem a bit clumsy compared with _magical functions_, it  has several subtle benefits:
 * You are free to have some tests which do use the setup function, and some which don't
 * You can have several different setup functions in the same test file and use them as needed
 * You can insert your own code before and after the setup function
-* setup is just an ordinary function, no special names or annotations needed
+* setup is just an ordinary function, no special names or annotations, no accidental clashes
 
 Running code before or after a whole suite of tests is even simpler. Just add your setup code at the start
 and/or end of the array of test functions which form the test suite.
@@ -481,8 +512,8 @@ As an example, the default options in the source code are:
 ```js
 var default_options = {
   title: function(text) { console.log(text + ':'); },
-  pass: function(name, message) { console.log('PASS ' + name + ': ' + message); },
-  fail: function(name, message) { console.log('FAIL ' + name + ': ' + message); },
+  pass: function(label, message) { /* by default, don't log passes, just count them */ },
+  fail: function(label, message) { console.log('FAIL ' + label + ': ' + message); },
   summary: function(npass, nfail) {
     console.log('----');
     console.log('PASS: ' + npass);
@@ -493,9 +524,9 @@ var default_options = {
 };
 ```
 **hath** will use the above defaults for any fields not specified in the options object,
-so feel free to override (say) just the summary, or just pass and fail, etc.
+so feel free to override (say) just the summary, or just pass or fail, etc.
 
-### Exceptions and Events
+### Errors, Exceptions and Events
 
 **hath** does nothing to catch exceptions or events.
 If you care about the exception or event behaviour of your code, you will need to catch them explicitly in your tests.
@@ -550,7 +581,7 @@ function testExceptionsWithHelper(t, done) {
 
 ( see examples/test_exceptions.js )
 
-### Exports and require.main
+### Suites, Exports and require.main
 
 For speed of development, I like to be able to run any of my test files on their own as well as part of an overall
 test suite.

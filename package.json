@@ -4,7 +4,7 @@
   "description": "unit tests without magic",
   "main": "index.js",
   "scripts": {
-    "test": "node test/test_all.js"
+    "test": "node examples/test_all.js"
   },
   "license": "Apache-2.0",
   "repository": {

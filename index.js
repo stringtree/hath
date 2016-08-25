@@ -3,7 +3,7 @@ var util = require('util');
 
 var default_options = {
   title: function(text) { console.log(text + ':'); },
-  pass: function(label, message) { console.log('PASS ' + label + ': ' + message); },
+  pass: function(label, message) { /* by default, don't log passes, just count them */ },
   fail: function(label, message) { console.log('FAIL ' + label + ': ' + message); },
   summary: function(npass, nfail) {
     console.log('----');
@@ -72,8 +72,8 @@ function sequence(t, steps, done) {
 
 function run(title, steps, next) {
   var self = this;
-  self.options.title(title);
   sequence(this, steps, function(err) {
+    self.options.title(title, self.npass);
     if (next) {
       next(self.npass, self.nfail);
     } else {
