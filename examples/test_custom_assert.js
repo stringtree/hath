@@ -1,6 +1,6 @@
 var Hath = require('../index');
 
-var parse = require('./parser');
+var parse = require('./parser').parse;
 
 Hath.helper('assertProduction', function(input, expected, message) {
   message = message || '' + input + ' => ' + expected;

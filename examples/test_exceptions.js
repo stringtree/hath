@@ -1,6 +1,6 @@
 var Hath = require('../index');
 
-var parse = require('./parser');
+var parse = require('./parser').parse;
 
 function testExceptions(t, done) {
   try {
@@ -20,23 +20,32 @@ function testExceptions(t, done) {
   done();
 }
 
-function codeThrows(code) {
+Hath.helper('assertThrows', function assertThrows(message, code) {
   try {
     code();
-    return false;
+    this.assert(false, message)
   } catch (e) {
-    return true;
+    this.assert(true, message)
   }
-}
+});
+
+Hath.helper('assertDoesNotThrow', function assertDoesNotThrow(message, code) {
+  try {
+    code();
+    this.assert(true, message)
+  } catch (e) {
+    this.assert(false, message)
+  }
+});
 
 function testExceptionsWithHelper(t, done) {
-  t.assert(!codeThrows(function() {
+  t.assertDoesNotThrow('terminated string should not throw', function() {
     parse('"Frank"');
-  }), 'terminated string should not throw');
+  });
 
-  t.assert(codeThrows(function() {
+  t.assertThrows('unterminated string should throw', function() {
     parse('"Frank');
-  }), 'unterminated string should throw');
+  });
 
   done();
 }

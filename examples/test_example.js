@@ -1,6 +1,8 @@
 var Hath = require('../index');
 
-var parse = require('./parser');
+var parser = require('./parser');
+var parse = parser.parse;
+var parse_async = parser.parse_async;
 
 function testInvalid(t, done) {
   t.assert(null === parse(null), 'null => null');
@@ -32,14 +34,28 @@ function testStrings(t, done) {
   t.assert('bc' === parse('"bc"'), 'multiple character');
   t.assert("f e" === parse('"f e"'), 'string with spaces');
   t.assert("2" === parse('"2"'), 'string with number');
+  try {
+    var ret = parse('"2');
+    t.assert(false, 'unterminated string should throw')
+  } catch(err) {
+    t.assert(true, 'unterminated string should throw')
+  }
   done();
+}
+
+function testAsync(t, done) {
+  parse_async('12', function(err, value) {
+    t.assert(12 === value, 'multiple digits async');
+    done();
+  });
 }
 
 module.exports = Hath.suite('Parser', [
   testInvalid,
   testNumbers,
   testSymbols,
-  testStrings
+  testStrings,
+  testAsync
 ]);
 
 if (module === require.main) {

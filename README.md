@@ -22,7 +22,7 @@ _(as long as they call the supplied callback when finished, of course)_
 * * [Extra Asserts](#extra-asserts)
 * * [Shared Setup](#shared-setup)
 * * [Custom Output](#custom-output)
-* * [Errors, Exceptions and Events](#errors-exceptions-and-events)
+* * [Exceptions, Events and Errors](#exceptions-events-and-errors)
 * * [Suites, Exports and require.main](#suites-exports-and-requiremain)
 * [Footnote](#footnote)
 
@@ -30,7 +30,9 @@ _(as long as they call the supplied callback when finished, of course)_
 ```js
 var Hath = require('hath');
 
-var parse = require('./parser');
+var parser = require('./parser');
+var parse = parser.parse;
+var parse_async = parser.parse_async;
 
 function testInvalid(t, done) {
   t.assert(null === parse(null), 'null => null');
@@ -50,9 +52,9 @@ function testNumbers(t, done) {
 }
 
 function testSymbols(t, done) {
-  t.assert(true === parse('t'), 't => true');
-  t.assert(false === parse('f'), 'f => false');
-  t.assert(null === parse('n'), 'n => null');
+  t.assert(true === parse('t'), 'true');
+  t.assert(false === parse('f'), 'false');
+  t.assert(null === parse('n'), 'null');
   done();
 }
 
@@ -62,14 +64,28 @@ function testStrings(t, done) {
   t.assert('bc' === parse('"bc"'), 'multiple character');
   t.assert("f e" === parse('"f e"'), 'string with spaces');
   t.assert("2" === parse('"2"'), 'string with number');
+  try {
+    var ret = parse('"2');
+    t.assert(false, 'unterminated string should throw')
+  } catch(err) {
+    t.assert(true, 'unterminated string should throw')
+  }
   done();
+}
+
+function testAsync(t, done) {
+  parse_async('12', function(err, value) {
+    t.assert(12 === value, 'multiple digits async');
+    done();
+  });
 }
 
 module.exports = Hath.suite('Parser', [
   testInvalid,
   testNumbers,
   testSymbols,
-  testStrings
+  testStrings,
+  testAsync
 ]);
 
 if (module === require.main) {
@@ -108,7 +124,8 @@ Let's get coding!
 
     var t = new Hath(optional output specification object)
 
-Create a new **hath** test runner, using the specified output functions, or defaults where not specified.
+Create a new **hath** test runner, using the specified output functions (see [Custom Output](#custom-output) ),
+or defaults where not specified.
 Set the pass and fail counts to zero ready for a new set of tests.
 
 ### assert
@@ -116,12 +133,12 @@ Set the pass and fail counts to zero ready for a new set of tests.
     t.assert(expression, optional message)
 
 Evaluate the supplied expression.
-* If it is truthy, call the 'pass' handler with the label for this test and the supplied message
+* If it is truthy, call the 'pass' handler (see [Custom Output](#custom-output) ) with the label for this test and the supplied message
 (or a default if not supplied)
-* If it is falsy, call the 'fail' handler with the label for this test and the supplied message
+* If it is falsy, call the 'fail' handler (see [Custom Output](#custom-output) ) with the label for this test and the supplied message
 (or a default if not supplied)
 
-Collect a running total of the number of passes and fails, ready to pass to the 'summary' handler after the tests.
+Collect a running total of the number of passes and fails, ready to pass to the 'summary' handler (see [Custom Output](#custom-output) ) after the tests.
 
 ### label
 
@@ -210,7 +227,7 @@ function testConcatenationWithFunction(t, done) {
 
   function assertEquals(expected, actual, message) {
     message = message || 'assertEquals'
-    t.assert(actual === expected, '' + message + ': expected "' + expected + '" but was "' + actual + '"');
+    t.assert(actual===expected, '' + message + ': expected "' + expected + '" but was "' + actual + '"');
   }
 
   assertEquals('', [].join(' '), 'empty array');
@@ -223,7 +240,7 @@ function testConcatenationWithFunction(t, done) {
 
 Hath.helper('assertEquals', function(expected, actual, message) {
   message = message || 'assertEquals'
-  this.assert(actual === expected, '' + message + ': expected "' + expected + '" but was "' + actual + '"');
+  this.assert(actual===expected, '' + message + ': expected "' + expected + '" but was "' + actual + '"');
 });
 
 function testConcatenationWithHelper(t, done) {
@@ -251,7 +268,7 @@ and can explain a but more of what went wrong if a test fails.
 ```js
 var Hath = require('hath');
 
-var parse = require('./parser');
+var parse = require('./parser').parse;
 
 Hath.helper('assertProduction', function(input, expected, message) {
   message = message || '' + input + ' => ' + expected;
@@ -526,7 +543,7 @@ var default_options = {
 **hath** will use the above defaults for any fields not specified in the options object,
 so feel free to override (say) just the summary, or just pass or fail, etc.
 
-### Errors, Exceptions and Events
+### Exceptions, Events and Errors
 
 **hath** does nothing to catch exceptions or events.
 If you care about the exception or event behaviour of your code, you will need to catch them explicitly in your tests.
@@ -535,6 +552,10 @@ Un-caught exceptions will typically stop the test process and display a stack tr
 For example:
 
 ```js
+var Hath = require('hath');
+
+var parse = require('./parser').parse;
+
 function testExceptions(t, done) {
   try {
     parse('"Frank"');
@@ -552,34 +573,108 @@ function testExceptions(t, done) {
 
   done();
 }
+
+module.exports = Hath.suite('Exceptions', [
+  testExceptions
+]);
+
+if (module === require.main) {
+  module.exports(new Hath());
+}
 ```
 
 If that seems a bit wordy, remember that you can always define your own assert helper, perhaps like:
 
 ```js
-function codeThrows(code) {
+var Hath = require('hath');
+
+var parse = require('./parser').parse;
+
+Hath.helper('assertThrows', function assertThrows(message, code) {
   try {
     code();
-    return false;
+    this.assert(false, message)
   } catch (e) {
-    return true;
+    this.assert(true, message)
   }
-}
+});
+
+Hath.helper('assertDoesNotThrow', function assertDoesNotThrow(message, code) {
+  try {
+    code();
+    this.assert(true, message)
+  } catch (e) {
+    this.assert(false, message)
+  }
+});
 
 function testExceptionsWithHelper(t, done) {
-  t.assert(!codeThrows(function() {
+  t.assertDoesNotThrow('terminated string should not throw', function() {
     parse('"Frank"');
-  }), 'terminated string should not throw');
+  });
 
-  t.assert(codeThrows(function() {
+  t.assertThrows('unterminated string should throw', function() {
     parse('"Frank');
-  }), 'unterminated string should throw');
+  });
 
   done();
+}
+
+module.exports = Hath.suite('Exceptions', [
+  testExceptionsWithHelper
+]);
+
+if (module === require.main) {
+  module.exports(new Hath());
 }
 ```
 
 ( see examples/test_exceptions.js )
+
+In a test suite there are essentially two types of errors:
+
+* Those to be counted, but testing should continue ( "_business as usual_" )
+* Those which are so serious or so unexpected that further testing is invalidated
+( "_If this fails, all bets are off_")
+
+**hath** allows you to distinguish between these two cases. 
+* For _business as usual_ errors, just count them with an assert and move on.
+* For _all bets are off_ errors, throw an exception to halt testing with a stacktrace
+indicating what went wrong where.
+
+```js
+var Hath = require('hath');
+var fs = require('fs');
+
+var parse = require('./parser').parse;
+
+function setup(t, done) {
+  fs.readFile('./test_script.txt', 'utf8', function (err, data) {
+    if (err) {
+      throw(new Error('could not load test script'))
+    }
+    t.locals.testdata = data;
+    done()
+  });
+}
+
+function testParseScript(t, done) {
+  var result = parse(t.locals.testdata);
+  t.assert(null != result)
+  done();
+} 
+
+module.exports = Hath.suite('Parse large script', [
+  setup,
+  testParseScript
+]);
+
+if (module === require.main) {
+  module.exports(new Hath());
+}
+```
+
+(see examples/test_with_serious_problem.js )
 
 ### Suites, Exports and require.main
 
@@ -609,11 +704,10 @@ if (module === require.main) {
   module.exports(new Hath());
 }
 ```
-This is a principle known as [_self similarity_](http://www3.amherst.edu/~rloldershaw/nature.html)
-and it can be very powerful.
+This is a principle known as [_self similarity_](http://www3.amherst.edu/~rloldershaw/nature.html).
 
 As a small side-note, the example code in this document assigns a function to _module.exports_, which is a common idiom
-indicaing that this function is what a caller will get when it uses, for example, ```require('./mytest')```.
+indicating that this function is what a caller will get when it uses, for example, ``require('./mytest')``.
 Slightly less common is the use of _module_exports_ as a function within the same file.
 This is a convenience to save the need to create a separate variable just to assign to _module_exports_.
 
