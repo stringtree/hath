@@ -54,7 +54,7 @@ function sequence(t, steps, done) {
 	  setImmediate(function() {
 	      t.label(test.name);
 	      test(t, complete);
-	  })
+	  });
   }
 
   function complete(err) {
@@ -78,6 +78,7 @@ function run(title, steps, next) {
       next(self.npass, self.nfail);
     } else {
       self.options.summary(self.npass, self.nfail);
+      process.exitCode = self.nfail;
     }
   });
 }

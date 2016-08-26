@@ -4,7 +4,7 @@ var Hath = require('../index');
 
 function testConcatenationWithFunction(t, done) {
   function assertEquals(expected, actual, message) {
-    message = message || 'assertEquals'
+    message = message || 'assertEquals';
     t.assert(actual===expected, '' + message + ': expected "' + expected + '" but was "' + actual + '"');
   }
 
@@ -17,7 +17,7 @@ function testConcatenationWithFunction(t, done) {
 // Flexible approach: define a helper which is available everywhere
 
 Hath.helper('assertEquals', function(expected, actual, message) {
-  message = message || 'assertEquals'
+  message = message || 'assertEquals';
   this.assert(actual===expected, '' + message + ': expected "' + expected + '" but was "' + actual + '"');
 });
 

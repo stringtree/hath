@@ -12,7 +12,7 @@ Hath.helper('assertChecklist', function(expected, actual) {
     });
   });
   ck.check(function(err, message) {
-    var message = 'all values loaded once each';
+    message = message || 'all values loaded once each';
     if (err) message = err;
     self.assert(!err, message);
   });
@@ -24,14 +24,14 @@ function resolve_delay(s) {
     setTimeout(function() {
       done(null, s);
     }, Math.random() * 100);
-  }
+  };
 }
 
 //stub operation which fails with an error
 function resolve_error(s, e) {
   return function(done) {
     done(new Error(e), s);
-  }
+  };
 }
 
 function testParallelLoad(t, done) {
@@ -43,7 +43,7 @@ function testParallelLoad(t, done) {
     resolve_delay('banana')
   ], function(err, values) {
 //    console.log('actual loaded values: ', values);
-    t.assertChecklist(['apple', 'banana', 'cherry', 'damson'], values)
+    t.assertChecklist(['apple', 'banana', 'cherry', 'damson'], values);
     done();
   });
 }

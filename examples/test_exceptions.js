@@ -23,18 +23,18 @@ function testExceptions(t, done) {
 Hath.helper('assertThrows', function assertThrows(message, code) {
   try {
     code();
-    this.assert(false, message)
+    this.assert(false, message);
   } catch (e) {
-    this.assert(true, message)
+    this.assert(true, message);
   }
 });
 
 Hath.helper('assertDoesNotThrow', function assertDoesNotThrow(message, code) {
   try {
     code();
-    this.assert(true, message)
+    this.assert(true, message);
   } catch (e) {
-    this.assert(false, message)
+    this.assert(false, message);
   }
 });
 

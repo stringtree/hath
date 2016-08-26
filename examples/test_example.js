@@ -36,9 +36,9 @@ function testStrings(t, done) {
   t.assert("2" === parse('"2"'), 'string with number');
   try {
     var ret = parse('"2');
-    t.assert(false, 'unterminated string should throw')
+    t.assert(false, 'unterminated string should throw');
   } catch(err) {
-    t.assert(true, 'unterminated string should throw')
+    t.assert(true, 'unterminated string should throw');
   }
   done();
 }

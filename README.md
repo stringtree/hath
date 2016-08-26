@@ -224,9 +224,8 @@ var Hath = require('hath');
 // Simple approach: declare a local function and call it
 
 function testConcatenationWithFunction(t, done) {
-
   function assertEquals(expected, actual, message) {
-    message = message || 'assertEquals'
+    message = message || 'assertEquals';
     t.assert(actual===expected, '' + message + ': expected "' + expected + '" but was "' + actual + '"');
   }
 
@@ -239,7 +238,7 @@ function testConcatenationWithFunction(t, done) {
 // Flexible approach: define a helper which is available everywhere
 
 Hath.helper('assertEquals', function(expected, actual, message) {
-  message = message || 'assertEquals'
+  message = message || 'assertEquals';
   this.assert(actual===expected, '' + message + ': expected "' + expected + '" but was "' + actual + '"');
 });
 
@@ -351,7 +350,7 @@ Hath.helper('assertChecklist', function(expected, actual) {
     });
   });
   ck.check(function(err, message) {
-    var message = 'all values loaded once each';
+    message = message || 'all values loaded once each';
     if (err) message = err;
     self.assert(!err, message);
   });
@@ -363,14 +362,14 @@ function resolve_delay(s) {
     setTimeout(function() {
       done(null, s);
     }, Math.random() * 100);
-  }
+  };
 }
 
 //stub operation which fails with an error
 function resolve_error(s, e) {
   return function(done) {
     done(new Error(e), s);
-  }
+  };
 }
 
 function testParallelLoad(t, done) {
@@ -382,7 +381,7 @@ function testParallelLoad(t, done) {
     resolve_delay('banana')
   ], function(err, values) {
 //    console.log('actual loaded values: ', values);
-    t.assertChecklist(['apple', 'banana', 'cherry', 'damson'], values)
+    t.assertChecklist(['apple', 'banana', 'cherry', 'damson'], values);
     done();
   });
 }
@@ -595,18 +594,18 @@ var parse = require('./parser').parse;
 Hath.helper('assertThrows', function assertThrows(message, code) {
   try {
     code();
-    this.assert(false, message)
+    this.assert(false, message);
   } catch (e) {
-    this.assert(true, message)
+    this.assert(true, message);
   }
 });
 
 Hath.helper('assertDoesNotThrow', function assertDoesNotThrow(message, code) {
   try {
     code();
-    this.assert(true, message)
+    this.assert(true, message);
   } catch (e) {
-    this.assert(false, message)
+    this.assert(false, message);
   }
 });
 
@@ -653,16 +652,16 @@ var parse = require('./parser').parse;
 function setup(t, done) {
   fs.readFile('./test_script.txt', 'utf8', function (err, data) {
     if (err) {
-      throw(new Error('could not load test script'))
+      throw(new Error('could not load test script'));
     }
     t.locals.testdata = data;
-    done()
+    done();
   });
 }
 
 function testParseScript(t, done) {
   var result = parse(t.locals.testdata);
-  t.assert(null != result)
+  t.assert(null != result);
   done();
 } 
 

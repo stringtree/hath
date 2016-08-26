@@ -16,4 +16,4 @@ module.exports = function loader(resolvers, next) {
       next(err, ret);
     });
   });
-}
+};

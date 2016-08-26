@@ -33,7 +33,7 @@ module.exports = {
       return done(null, parseInt(s));
     case '"':
       if (s.endsWith('"')) return done(null, s.slice(1, -1));
-      done(null, new Error('invalid string'));
+      return done(null, new Error('invalid string'));
     case 't':
       return done(null, true);
     case 'f':
