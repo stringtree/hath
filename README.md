@@ -19,11 +19,11 @@ _(as long as they call the supplied callback when finished, of course)_
 * [Design Philosophy](#design-philosophy)
 * [API](#api)
 * [Usage Hints](#usage-hints)
-** [Extra Asserts](#extra-asserts)
-** [Shared Setup](#shared-setup)
-** [Custom Output](#custom-output)
-** [Exceptions, Events and Errors](#exceptions-events-and-errors)
-** [Suites, Exports and require.main](#suites-exports-and-requiremain)
+  * [Extra Asserts](#extra-asserts)
+  * [Shared Setup](#shared-setup)
+  * [Custom Output](#custom-output)
+  * [Exceptions, Events and Errors](#exceptions-events-and-errors)
+  * [Suites, Exports and require.main](#suites-exports-and-requiremain)
 * [Footnote](#footnote)
 
 ## Usage Example
