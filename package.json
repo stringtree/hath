@@ -6,18 +6,21 @@
   "scripts": {
     "test": "node examples/test_all.js"
   },
+  "devDependencies": {
+    "async": "^2.0.1",
+    "stringtree-checklist": "^0.1.0"
+  },
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "http://github.com/stringtree/hath.git"
   },
+  "publishConfig": {
+    "registry":"http://registry.npmjs.org/"
+  },
   "author": {
     "name": "Frank Carver",
     "email": "frank@efsol.com",
     "url": "http://frankcarver.me/"
-  },
-  "devDependencies": {
-    "async": "^2.0.1",
-    "stringtree-checklist": "^0.1.0"
   }
 }
