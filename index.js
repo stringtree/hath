@@ -5,11 +5,13 @@ var default_options = {
   title: function(text) { console.log(text + ':'); },
   pass: function(label, message) { /* by default, don't log passes, just count them */ },
   fail: function(label, message) { console.log('FAIL ' + label + ': ' + message); },
-  summary: function(npass, nfail) {
+  error: function(label, err) { console.log('Error ' + label + ': ' + err.stack); },
+  summary: function(npass, nfail, nerr) {
     console.log('----');
     console.log('PASS: ' + npass);
     console.log('FAIL: ' + nfail);
-    console.log(0===nfail ? 'TESTS PASS' : 'TESTS FAIL');
+    console.log('ERROR: ' + nerr);
+    console.log(0 === (nfail + nerr) ? 'TESTS PASS' : 'TESTS FAIL');
   },
   message: 'assert'
 };
@@ -19,10 +21,12 @@ function Hath(options) {
   this.options.title = this.options.title || default_options.title;
   this.options.pass = this.options.pass || default_options.pass;
   this.options.fail = this.options.fail || default_options.fail;
+  this.options.error = this.options.error || default_options.error;
   this.options.summary = this.options.summary || default_options.summary;
   this.options.message = this.options.message || default_options.message;
   this.npass = 0;
   this.nfail = 0;
+  this.nerr = 0;
   this.locals = {};
 }
 
@@ -48,7 +52,6 @@ function sequence(t, steps, done) {
   if (!nsteps) return done();
 
   var count = 0;
-  var message;
 
   function dotest(test, complete) {
     setImmediate(function() {
@@ -59,11 +62,10 @@ function sequence(t, steps, done) {
 
   function complete(err) {
     ++count;
-    message = message || err;
     if (nsteps > count) {
       dotest(steps[count], complete);
     } else {
-      done(message);
+      done(err);
     }
   }
 
@@ -74,11 +76,15 @@ function run(title, steps, next) {
   var self = this;
   sequence(this, steps, function(err) {
     self.options.title(title, self.npass);
+    if (err) {
+      ++self.nerr;
+      self.options.error(self.testlabel, err);
+    }
     if (next) {
-      next(self.npass, self.nfail);
+      next();
     } else {
-      self.options.summary(self.npass, self.nfail);
-      process.exitCode = self.nfail;
+      self.options.summary(self.npass, self.nfail, self.nerr);
+      process.exitCode = self.nfail + self.nerr;
     }
   });
 }

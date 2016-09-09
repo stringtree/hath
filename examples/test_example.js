@@ -50,12 +50,17 @@ function testAsync(t, done) {
   });
 }
 
+function testError(t, done) {
+  done(new Error('Oh No!!'));
+}
+
 module.exports = Hath.suite('Parser', [
   testInvalid,
   testNumbers,
   testSymbols,
   testStrings,
-  testAsync
+  testAsync,
+  testError
 ]);
 
 if (module === require.main) {
