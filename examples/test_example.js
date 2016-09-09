@@ -10,7 +10,7 @@ function testInvalid(t, done) {
   t.assert(null === parse(''), 'space => null');
   t.assert(null === parse('  '), 'spaces => null');
   t.assert(null === parse('\n'), 'newline => null');
-  done(); 
+  done();
 }
 
 function testNumbers(t, done) {
@@ -50,12 +50,20 @@ function testAsync(t, done) {
   });
 }
 
+function testAbandon(t, done) {
+  var obj
+  if (! t.assert(obj, 'obj not defined')) return done();
+  t.assert(obj.prop === 1, 'prop !== 1')
+  done()
+}
+
 module.exports = Hath.suite('Parser', [
   testInvalid,
   testNumbers,
   testSymbols,
   testStrings,
-  testAsync
+  testAsync,
+  testAbandon
 ]);
 
 if (module === require.main) {

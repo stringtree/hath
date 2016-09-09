@@ -17,10 +17,10 @@ var default_options = {
 function Hath(options) {
   this.options = options || {};
   this.options.title = this.options.title || default_options.title;
-  this.options.pass = this.options.pass || default_options.pass; 
-  this.options.fail = this.options.fail || default_options.fail; 
-  this.options.summary = this.options.summary || default_options.summary; 
-  this.options.message = this.options.message || default_options.message; 
+  this.options.pass = this.options.pass || default_options.pass;
+  this.options.fail = this.options.fail || default_options.fail;
+  this.options.summary = this.options.summary || default_options.summary;
+  this.options.message = this.options.message || default_options.message;
   this.npass = 0;
   this.nfail = 0;
   this.locals = {};
@@ -35,6 +35,7 @@ function assert(condition, message) {
     ++this.nfail;
     this.options.fail(this.testlabel, message);
   }
+  return !!condition
 }
 Hath.prototype.assert = assert;
 
@@ -51,10 +52,10 @@ function sequence(t, steps, done) {
   var message;
 
   function dotest(test, complete) {
-	  setImmediate(function() {
-	      t.label(test.name);
-	      test(t, complete);
-	  });
+    setImmediate(function() {
+        t.label(test.name);
+        test(t, complete);
+    });
   }
 
   function complete(err) {
