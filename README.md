@@ -11,7 +11,7 @@ and easy control of output format and destination.
 * Uses no fancy version-specific features, tested as far back as node 0.10
 * You decide which combinations of single tests or groups of tests are run.
 * Tests to run are defined in ordinary code using simple JavaScript data structures and 'require'
-* Tests are run in the sequence they are supplied, even if they are asynchronous 
+* Tests are run in the sequence they are supplied, even if they are asynchronous
 _(as long as they call the supplied callback when finished, of course)_
 
 ## Index
@@ -40,7 +40,7 @@ function testInvalid(t, done) {
   t.assert(null === parse(''), 'space => null');
   t.assert(null === parse('  '), 'spaces => null');
   t.assert(null === parse('\n'), 'newline => null');
-  done(); 
+  done();
 }
 
 function testNumbers(t, done) {
@@ -233,7 +233,7 @@ function testConcatenationWithFunction(t, done) {
   assertEquals('hath', ['hath'].join(' '), 'single entry');
   assertEquals('hath is cool', ['hath','is','cool'].join(' '), 'multiple entry');
   done();
-} 
+}
 
 // Flexible approach: define a helper which is available everywhere
 
@@ -247,7 +247,7 @@ function testConcatenationWithHelper(t, done) {
   t.assertEquals('hath', ['hath'].join(' '), 'single entry');
   t.assertEquals('hath is cool', ['hath','is','cool'].join(' '), 'multiple entry');
   done();
-} 
+}
 
 module.exports = Hath.suite('Custom Equals', [
   testConcatenationWithFunction,
@@ -263,7 +263,7 @@ if (module === require.main) {
 As a more meaty example, some of the parser tests from the previous section could probably be made a bit more readable,
 and the test output a bit more useful, by writing a custom assertion which knows how to call the parser
 and can explain a but more of what went wrong if a test fails.
- 
+
 ```js
 var Hath = require('hath');
 
@@ -282,7 +282,7 @@ function testInvalid(t, done) {
   t.assertProduction('  ', null, 'spaces => null');
   t.assertProduction('\n', null, 'newline => null');
   done();
-} 
+}
 
 module.exports = Hath.suite('Custom Assertions', [
   testInvalid
@@ -397,7 +397,7 @@ if (module === require.main) {
 
 ( see examples/test_loader.js )
 
-To prove to yourself that this works, feel free to uncomment the console.log statement and run the test a few times using 
+To prove to yourself that this works, feel free to uncomment the console.log statement and run the test a few times using
 ``node examples/test_loader`` to see that the loaded values appear in a different order, but the tests still pass.
 
 ### Shared Setup
@@ -422,7 +422,7 @@ function testSingle(t, done) {
     t.assert(sofar.length === 3);
     done();
   });
-} 
+}
 
 function testDouble(t, done) {
   setup(function(sofar) {
@@ -431,7 +431,7 @@ function testDouble(t, done) {
     t.assert(sofar.length === 4);
     done();
   });
-} 
+}
 
 // test with different setup
 function testEmpty(t, done) {
@@ -638,7 +638,7 @@ In a test suite there are essentially two types of errors:
 * Those which are so serious or so unexpected that further testing is invalidated
 ( "_If this fails, all bets are off_")
 
-**hath** allows you to distinguish between these two cases. 
+**hath** allows you to distinguish between these two cases.
 * For _business as usual_ errors, just count them with an assert and move on.
 * For _all bets are off_ errors, throw an exception to halt testing with a stacktrace
 indicating what went wrong where.
@@ -663,7 +663,7 @@ function testParseScript(t, done) {
   var result = parse(t.locals.testdata);
   t.assert(null != result);
   done();
-} 
+}
 
 module.exports = Hath.suite('Parse large script', [
   setup,
