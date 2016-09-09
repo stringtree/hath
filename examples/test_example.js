@@ -10,7 +10,7 @@ function testInvalid(t, done) {
   t.assert(null === parse(''), 'space => null');
   t.assert(null === parse('  '), 'spaces => null');
   t.assert(null === parse('\n'), 'newline => null');
-  done(); 
+  done();
 }
 
 function testNumbers(t, done) {
