@@ -35,6 +35,7 @@ function assert(condition, message) {
     ++this.nfail;
     this.options.fail(this.testlabel, message);
   }
+  return condition
 }
 Hath.prototype.assert = assert;
 
