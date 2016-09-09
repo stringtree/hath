@@ -11,7 +11,7 @@ and easy control of output format and destination.
 * Uses no fancy version-specific features, tested as far back as node 0.10
 * You decide which combinations of single tests or groups of tests are run.
 * Tests to run are defined in ordinary code using simple JavaScript data structures and 'require'
-* Tests are run in the sequence they are supplied, even if they are asynchronous 
+* Tests are run in the sequence they are supplied, even if they are asynchronous
 _(as long as they call the supplied callback when finished, of course)_
 
 ## Index
@@ -40,7 +40,7 @@ function testInvalid(t, done) {
   t.assert(null === parse(''), 'space => null');
   t.assert(null === parse('  '), 'spaces => null');
   t.assert(null === parse('\n'), 'newline => null');
-  done(); 
+  done();
 }
 
 function testNumbers(t, done) {
@@ -80,12 +80,20 @@ function testAsync(t, done) {
   });
 }
 
+function testAbandon(t, done) {
+  var obj
+  if (! t.assert(obj, 'obj not defined')) return done();
+  t.assert(obj.prop === 1, 'prop !== 1')
+  done()
+}
+
 module.exports = Hath.suite('Parser', [
   testInvalid,
   testNumbers,
   testSymbols,
   testStrings,
-  testAsync
+  testAsync,
+  testAbandon
 ]);
 
 if (module === require.main) {
@@ -137,6 +145,7 @@ Evaluate the supplied expression.
 (or a default if not supplied)
 * If it is falsy, call the 'fail' handler (see [Custom Output](#custom-output) ) with the label for this test and the supplied message
 (or a default if not supplied)
+* returns true if the assertion passed and false otherwise, enabling you to abandon failing tests early.
 
 Collect a running total of the number of passes and fails, ready to pass to the 'summary' handler (see [Custom Output](#custom-output) ) after the tests.
 
@@ -397,7 +406,7 @@ if (module === require.main) {
 
 ( see examples/test_loader.js )
 
-To prove to yourself that this works, feel free to uncomment the console.log statement and run the test a few times using 
+To prove to yourself that this works, feel free to uncomment the console.log statement and run the test a few times using
 ``node examples/test_loader`` to see that the loaded values appear in a different order, but the tests still pass.
 
 ### Shared Setup
