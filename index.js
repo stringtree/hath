@@ -73,8 +73,8 @@ function sequence(t, steps, done) {
 
 function run(title, steps, next) {
   var self = this;
+  self.options.title(title);
   sequence(this, steps, function(err) {
-    self.options.title(title, self.npass);
     if (next) {
       next(self.npass, self.nfail);
     } else {
