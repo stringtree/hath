@@ -17,10 +17,10 @@ var default_options = {
 function Hath(options) {
   this.options = options || {};
   this.options.title = this.options.title || default_options.title;
-  this.options.pass = this.options.pass || default_options.pass; 
-  this.options.fail = this.options.fail || default_options.fail; 
-  this.options.summary = this.options.summary || default_options.summary; 
-  this.options.message = this.options.message || default_options.message; 
+  this.options.pass = this.options.pass || default_options.pass;
+  this.options.fail = this.options.fail || default_options.fail;
+  this.options.summary = this.options.summary || default_options.summary;
+  this.options.message = this.options.message || default_options.message;
   this.npass = 0;
   this.nfail = 0;
   this.locals = {};
@@ -75,8 +75,12 @@ function run(title, steps, next) {
   var self = this;
   self.options.title(title);
   sequence(this, steps, function(err) {
+    if (err) {
+      ++self.nfail;
+      self.options.fail(self.testlabel, err);
+    }
     if (next) {
-      next(self.npass, self.nfail);
+      next(null, self.npass, self.nfail);
     } else {
       self.options.summary(self.npass, self.nfail);
       process.exitCode = self.nfail;
